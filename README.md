@@ -19,7 +19,7 @@ Android 端动态路由跳转方案，替代默认的 Activity/Fragment 跳转�
 
 ## 开始使用
 
-##### ViewMap
+### ViewMap
 
 `viewmap.josn` 为 Router 的核心文件，作为项目中各个页面跳转的依据。使用时需放在应用的 `assets` 目录下。
 
@@ -86,7 +86,7 @@ Android 端动态路由跳转方案，替代默认的 Activity/Fragment 跳转�
 ```
 
 
-##### ViewMap 版本说明
+#### ViewMap 版本说明
 
 APP保留一份默认的 `viewmap` 文件,作为初始化文件，初始版本可在 `Router` 初始化的时候指定。默认初始版本为 `V1.0.0`。**请按照相关规范命名版本号，要么统一v或者V开头，要么直接是1.0.1 的样式，初始化的时候需要指定更新的 url(应该包含应用名称标识和平台标识)。**
 
@@ -99,15 +99,15 @@ option.request = EjuRequest.newBuilder().url("http://172.29.32.215:10086/app/che
 router.initialize(this, option);
 ```
 
-##### ViewMap 更新说明
+#### ViewMap 更新说明
 
 `SDK` 会在应用每次**启动的时候**加载本地最新的配置文件和检测服务器最新的配置文件，如果需要更新，将会自动下载最新的配置文件，**在下一次重新启动应用的时候读取下载的配置文件参数，执行新的逻辑**。
 
-##### Router
+### Router
 
 Router 的导航控制，项目中所有的页面跳转应该由`Router`来进行。使用方法如下：
 
-###### 初始化 Router
+#### 初始化 Router
 
 自定义 Application，在`onCreate()`方法中初始化`Router`对象。
 
@@ -128,7 +128,7 @@ public class App extends Application {
 }
 ```
 
-###### 跳转到其它 Activity
+#### 跳转到其它 Activity
 
 在需要进行页面跳转的地方调用下列代码：
 
@@ -156,7 +156,7 @@ router.route(context, "target", ViewMapInfo.TYPE_NATIVE, param);
 - 传递到目标画面的参数，类型为 `Map<String,Object>`
 - 传递到目标画面的 RequestCode，无需回传参数时可以省略
 
-###### 获得 Fragment 对象
+#### 获得 Fragment 对象
 
 ```java
 Fragment fragment = router.findFragmentById(context, " id for fragment", param);
@@ -172,7 +172,7 @@ Fragment fragment = router.findFragmentById(context, " id for fragment", param);
 
 > 如果想获得 Support 包的 Fragment 对象，可以使用 `findSupportFragmentById()` 方法替代上述的 `findFragmentById()` 方法
 
-###### 从 Framgent 中跳转到其它 Activity
+#### 从 Framgent 中跳转到其它 Activity
 
 从 Fragment 中跳转到其它 Activity 时也可以按照 `跳转到其它 Activity` 章节所示代码进行编写，但是如果希望回传参数到 Fragment，即响应 Fragment 的 `onActivityResult()` 的话则需要使用以下方法
 
@@ -188,7 +188,7 @@ router.route(fragment, "id for target fragment", ViewMapInfo.TYPE_NATIVE, param,
 - 传递到目标画面的参数，类型为 `Map<String,Object>`
 - 传递到目标画面的 RequestCode，无需回传参数时可以省略
 
-###### 跳转到本地/远程 Html
+#### 跳转到本地/远程 Html
 
 ```java
 router.route(context, "id for html", ViewMapInfo.TYPE_REMOTE_HTML, param);
@@ -203,7 +203,7 @@ router.route(context, "id for html", ViewMapInfo.TYPE_REMOTE_HTML, param);
 
 > 跳转到本地 html 时只需将上述的 `TYPE_REMOTE_HTML` 替换成 `TYPE_LOCAL_HTML` 即可
 
-###### 控制 Html 路由
+#### 控制 Html 路由
 
  在 Html 中跳转到本地时需要使用特殊的 Schema，SDK 默认提供 `eju` 作为跳转的 Schema，也可以使用以下方法在 Router 初始化时进行指定
 
@@ -218,9 +218,9 @@ router.initialize(this, option);
 <a href="eju://main?x=1&foo=bar&name=樱桃小丸子">跳转到其它画面</a>
 ```
 
-##### 异常处理
+### 异常处理
 
-###### 配置 404 画面
+#### 配置 404 画面
 
 当应用无法找到所需跳转的资源时，可以通过指定默认的 404 画面，在发生该错误时直接跳转到该画面，通常其值应该为 Activity 的完整类名
 
@@ -228,7 +228,7 @@ router.initialize(this, option);
 router.set404ViewMap("resource for 404";
 ```
 
-###### 处理其它错误
+#### 处理其它错误
 
 当 SDK 在处理过程中发生异常或者资源找不到且没有配置 404 画面时，SDK 会尝试调用开发者指定的异常处理函数
 
