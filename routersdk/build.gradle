@@ -1,0 +1,63 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion '24.0.3'
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 24
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+task releaseJar(type: Jar) {
+    baseName 'libEjuRouter'
+    classifier 'release'
+
+    FileTree tree = fileTree('build/intermediates/classes/release')
+    tree.exclude('**/BuildConfig.class', '**/R.class')
+    tree.exclude('**/R$*.class')
+    from tree
+
+    destinationDir file('../library/')
+}
+releaseJar.dependsOn(build)
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:24.2.0'
+    testCompile 'junit:junit:4.12'
+
+    // http
+    provided 'com.mcxiaoke.volley:library:1.0.19'
+    provided 'com.squareup.okhttp3:okhttp:3.3.1'
+
+    // json
+    provided 'com.google.code.gson:gson:2.7'
+
+    //  Robolectric
+    testCompile "org.robolectric:robolectric:3.1.2"
+
+    //  AssertJ
+    testCompile 'com.squareup.assertj:assertj-android:1.1.0'
+
+    //  PowerMock + Mockito
+    testCompile 'org.powermock:powermock-module-junit4:1.6.5'
+    testCompile "org.powermock:powermock-module-junit4-rule:1.6.5"
+    testCompile 'org.powermock:powermock-api-mockito:1.6.5'
+    testCompile "org.powermock:powermock-classloading-xstream:1.6.5"
+}

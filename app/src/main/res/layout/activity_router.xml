@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/activity_horizontal_margin">
+
+        <Button
+            android:id="@+id/btnToActivity"
+            style="@style/RaisedButton"
+            android:text="Activity 跳转到 Activity" />
+
+        <Button
+            android:id="@+id/btnTo404"
+            style="@style/RaisedButton"
+            android:text="跳转到 404" />
+
+        <Button
+            android:id="@+id/btnHandleException"
+            style="@style/RaisedButton"
+            android:text="处理异常回调" />
+
+        <Button
+            android:id="@+id/btnToFragment"
+            style="@style/RaisedButton"
+            android:text="获得 Fragment 实例" />
+
+        <Button
+            android:id="@+id/btnToSupportFragment"
+            style="@style/RaisedButton"
+            android:text="获得 Support Fragment 实例" />
+
+
+        <Button
+            android:id="@+id/btnToRemoteH5"
+            style="@style/RaisedButton"
+            android:text="跳转到远程 H5" />
+
+        <Button
+            android:id="@+id/btnToLocalH5"
+            style="@style/RaisedButton"
+            android:text="跳转到本地 H5" />
+
+        <Button
+            android:text="Set Result"
+            android:id="@+id/btnSetResult"
+            style="@style/RaisedButton" />
+
+        <FrameLayout
+            android:id="@+id/container"
+            android:layout_width="match_parent"
+            android:layout_height="320dp"
+            android:background="#EFEFEF" />
+    </LinearLayout>
+</ScrollView>

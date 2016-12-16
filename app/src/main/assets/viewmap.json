@@ -1,0 +1,40 @@
+{
+  "mapinfos": [
+    {
+      "id": "main",
+      "description": "主画面",
+      "type": 0,
+      "resource": "com.ejurouter.router_sdk.activity.RouterActivity"
+    },
+    {
+      "id": "target",
+      "description": "bilili",
+      "type": 0,
+      "resource": "com.ejurouter.router_sdk.activity.TargetActivity"
+    },
+    {
+      "id": "remote",
+      "description": "远程 Html",
+      "type": 2,
+      "resource": "http://172.29.32.215:8080/app/index.html"
+    },
+    {
+      "id": "local",
+      "description": "本地 Html",
+      "type": 1,
+      "resource": "file:///android_asset/www/index.html"
+    },
+    {
+      "id": "fragment",
+      "description": "Fragment",
+      "type": 0,
+      "resource": "com.ejurouter.router_sdk.fragment.TargetFragment"
+    },
+    {
+      "id": "supportFragment",
+      "description": "Support Fragment",
+      "type": 0,
+      "resource": "com.ejurouter.router_sdk.fragment.SupportTargetFragment"
+    }
+  ]
+}

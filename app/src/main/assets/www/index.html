@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,width=device-width"/>
+    <title>Home Page</title>
+    <link href="css/index.css" rel="stylesheet" type="text/css"/>
+</head>
+<body>
+<div id="container">
+    <p>Location:
+        <script style="text/javascript">document.write(window.location.href)</script>
+    </p>
+    <div id="header">
+        <p>header</p>
+    </div>
+    <div id="content">
+        <a href="eju://target?x=1&y=abc&name=樱桃小丸子">跳转到 Activity</a>
+        <a href="http://www.baidu.com"> 跳转到 Baidu</a>
+        <a href="eju://local?z=1&foo=bar">跳转到本地 Html</a>
+        <a href="eju://remote?z=1&foo=bar&name=樱桃小丸子">跳转到远程 Html</a>
+    </div>
+    <div id="footer">
+        <p>footer</p>
+    </div>
+</div>
+<script style="text/javascript" src="js/index.js"></script>
+</body>
+</html>
