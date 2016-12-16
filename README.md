@@ -10,13 +10,13 @@ Android端动态路由跳转方案，替代默认的Activity/Fragment跳转方�
 2. Native <-> Native
 3. H5 <-> Native
 
-请参照[wiki](http://git.eju-inc.com/sdk-router/sdk-android/wikis/home)获得更多信息。
+请参照[wiki](wiki)获得更多信息。
 
 
 
 ## 如何安装
 
-将 `libEjuRouter.jar` 放在应用的 `libs` 目录下
+前往 [Releaese](releases) 下载最新的 `libEjuRouter.jar` 并放在应用的 `libs` 目录下
 
 
 
