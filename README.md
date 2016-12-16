@@ -152,5 +152,5 @@ Router的导航控制，项目中所有的页面跳转应该由`Router`来进行
 
 ## License
 
-Copyright 2016 EjuCY.
+See the LICENSE file for license rights and limitations (Apache 2.0).
 
