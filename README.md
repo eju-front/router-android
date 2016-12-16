@@ -152,5 +152,5 @@ Router的导航控制，项目中所有的页面跳转应该由`Router`来进行
 
 ## License
 
-See the [LICENSE](LICENSE.md) file for license rights and limitations (Apache 2.0).
+See the [LICENSE](LICENSE) file for license rights and limitations (Apache 2.0).
 
