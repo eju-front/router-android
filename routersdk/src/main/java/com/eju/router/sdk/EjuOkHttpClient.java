@@ -28,6 +28,12 @@ import okhttp3.ResponseBody;
         client = builder.build();
     }
 
+    /**
+     * execute request with OkHttp.
+     * @param ejuRequest the request
+     * @return the response
+     * @throws EjuException
+     */
     @Override
     public EjuResponse execute(EjuRequest ejuRequest) throws EjuException {
         Request request = getRequest(ejuRequest);
@@ -41,6 +47,11 @@ import okhttp3.ResponseBody;
         return getResponse(response);
     }
 
+    /**
+     * translate {@link EjuRequest} to OkHttpRequest.
+     * @param request EJuRequest
+     * @return the OkHttpRequest
+     */
     @Override
     Request getRequest(EjuRequest request) {
         Request.Builder okHttpRequestBuilder = new Request.Builder();
@@ -57,6 +68,12 @@ import okhttp3.ResponseBody;
         return okHttpRequestBuilder.method(getMethod(request.getMethod()), requestBody).build();
     }
 
+    /**
+     * translate OkHttpResponse to {@link EjuResponse}
+     * @param response OkHttpResponse
+     * @return EjuResponse
+     * @throws EjuException
+     */
     @Override
     EjuResponse getResponse(Response response) throws EjuException {
         HashMap<String, String> headers = new HashMap<>();

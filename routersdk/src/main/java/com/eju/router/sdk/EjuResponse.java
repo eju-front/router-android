@@ -18,6 +18,10 @@ import java.util.Map;
         this.body = body;
     }
 
+    /**
+     * whether the request is successful.
+     * @return true successful false otherwise.
+     */
     boolean isSuccessful() {
         return (statusCode >= 200 && statusCode < 300) || statusCode == 304;
     }

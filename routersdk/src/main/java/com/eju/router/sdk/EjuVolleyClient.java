@@ -27,6 +27,12 @@ import java.util.concurrent.TimeoutException;
 
     }
 
+    /**
+     * execute EjuRequest with Volley
+     * @param ejuRequest EjuRequest
+     * @return  EjuResponse
+     * @throws EjuException
+     */
     @Override
     public EjuResponse execute(EjuRequest ejuRequest) throws EjuException {
         Request<NetworkResponse> req = getRequest(ejuRequest);
@@ -34,6 +40,11 @@ import java.util.concurrent.TimeoutException;
         return getResponse(req);
     }
 
+    /**
+     * translate EJuRequest to Volley Request
+     * @param request EjuRequest
+     * @return the Request of Volley
+     */
     @Override
     Request<NetworkResponse> getRequest(final EjuRequest request) {
         return new Request<NetworkResponse>(
@@ -72,6 +83,12 @@ import java.util.concurrent.TimeoutException;
         };
     }
 
+    /**
+     * translate Volley response to EjuResponse
+     * @param networkResponseRequest volley request
+     * @return EjuResponse
+     * @throws EjuException
+     */
     @Override
     EjuResponse getResponse(Request<NetworkResponse> networkResponseRequest) throws EjuException {
         NetworkResponse networkResponse;

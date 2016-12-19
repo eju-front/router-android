@@ -9,27 +9,53 @@ public class EjuException extends Exception {
 
     private int code;
 
+    /**
+     * init with message.
+     * @param message the message of current {@link EjuException}
+     */
     public EjuException(String message) {
         super(message);
     }
 
+    /**
+     * init with  code and message.
+     * @param code the code such as {@link EjuException#UNKNOWN_ERROR} or {@link EjuException#ILLEGAL_PARAMETER}
+     * @param message the message of current {@link EjuException}
+     */
     public EjuException(int code, String message) {
         super(message);
         this.code = code;
     }
 
+    /**
+     * init with message and cause
+     * @param message the message
+     * @param cause the cause
+     */
     public EjuException(String message, Throwable cause) {
         super(message, cause);
     }
 
+    /**
+     * init with cause
+     * @param cause the case
+     */
     public EjuException(Throwable cause) {
         super(cause);
     }
 
+    /**
+     * get the code of {@link EjuException}
+     * @return the code
+     */
     public int getCode() {
         return code;
     }
 
+    /**
+     * set code to the exception
+     * @param code specified code
+     */
     public void setCode(int code) {
         this.code = code;
     }

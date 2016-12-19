@@ -7,6 +7,9 @@ import com.eju.router.sdk.exception.EjuException;
  */
 
 public interface ExceptionHandler {
-
+    /**
+     * handle {@link EjuException}
+     * @param e the EjuException
+     */
     void handle(EjuException e);
 }

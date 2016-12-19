@@ -19,6 +19,12 @@ import java.util.Map;
         super(timeout);
     }
 
+    /**
+     * execute request with HttpURLConnection.
+     * @param ejuRequest EJuRequest
+     * @return EjuResponse
+     * @throws EjuException
+     */
     @Override
     public EjuResponse execute(EjuRequest ejuRequest) throws EjuException {
         HttpURLConnection connection;
@@ -34,6 +40,12 @@ import java.util.Map;
         return getResponse(connection);
     }
 
+    /**
+     * translate EJuRequest to HttpURLConnection
+     * @param request EJuRequest
+     * @return HttpURLConnection
+     * @throws IOException
+     */
     @Override
     HttpURLConnection getRequest(EjuRequest request) throws IOException {
         URL url = new URL(request.getUrl());
@@ -58,6 +70,12 @@ import java.util.Map;
         return connection;
     }
 
+    /**
+     * translate HttpURLConnection to EJuResponse
+     * @param connection HttpURLConnection
+     * @return EJuResponse
+     * @throws EjuException
+     */
     @Override
     EjuResponse getResponse(HttpURLConnection connection) throws EjuException {
         try {
