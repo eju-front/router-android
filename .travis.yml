@@ -1,6 +1,7 @@
 language: android
 jdk: oraclejdk8
-sudo: required
+sudo: false
+
 android:
   components:
     # Uncomment the lines below if you want to
@@ -31,7 +32,7 @@ android:
     - extra-google-google_play_services
     - extra-google-m2repository
     - extra-android-m2repository
-
+    - extra-android-support
   licenses:
     - 'android-sdk-preview-license-52d11cd2'
     - 'android-sdk-license-.+'
