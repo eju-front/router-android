@@ -35,11 +35,13 @@ android:
 
   # Emulator Management: Create, Start and Wait
   before_script:
-    - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
-    - emulator -avd test -no-audio -no-window &
-    - android-wait-for-emulator
-    - adb shell input keyevent 82 &
+#    - echo no | android create avd --force -n test -t android-22 --abi armeabi-v7a
+#    - emulator -avd test -no-audio -no-window &
+#    - android-wait-for-emulator
+#    - adb shell input keyevent 82 &
 
+ - chmod +x gradlew
   script:
-    - android list target
-    - ./gradlew connectedAndroidTest
+#    - android list target
+#    - ./gradlew connectedAndroidTest
+  - ./gradlew test
