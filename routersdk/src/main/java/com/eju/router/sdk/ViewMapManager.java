@@ -71,6 +71,12 @@ import java.util.Map;
         this.context = context;
     }
 
+    /**
+     * get the {@link ViewMapInfo} with the specified id.
+     *
+     * @param id the id
+     * @return the specified {@link ViewMapInfo} or null for otherwise
+     */
     @Nullable
     ViewMapInfo getViewMapInfo(String id) {
         if (viewMapInfos.containsKey(id)) {
@@ -81,7 +87,14 @@ import java.util.Map;
 
 
     /**
-     * In fact,Maybe checkVersion at first ,so you should call {@link #checkViewMapVersion(EjuRequest, DownLoadCallBack)}
+     * download the ViewMap with given parameters,In fact,Maybe checkVersion at first ,so you should call {@link #checkViewMapVersion(EjuRequest, DownLoadCallBack)}
+     *
+     * @param url        the download url
+     * @param method     the request type
+     * @param headers    the headers
+     * @param body       the body
+     * @param parentPath the parent path
+     * @param callBack   the callBack
      */
     void downloadViewMap(@NonNull String url, @Method int method, @NonNull Map<String, String> headers, @Nullable byte[] body, @Nullable String parentPath, @Nullable DownLoadCallBack<File> callBack) {
         checkUrlValid(url);
@@ -94,6 +107,12 @@ import java.util.Map;
 
     }
 
+    /**
+     * check the ViewMap version with the given request
+     *
+     * @param request  the request to checkup
+     * @param callBack the callBack
+     */
     void checkViewMapVersion(EjuRequest request, @Nullable DownLoadCallBack<ViewMap> callBack) {
         checkUrlValid(request.getUrl());
         if (request.getHeaders() == null) {
@@ -104,18 +123,28 @@ import java.util.Map;
 
     }
 
+    /**
+     * check the url is available.
+     *
+     * @param url the url
+     */
     private static void checkUrlValid(String url) {
         if (!URLUtil.isValidUrl(url)) {
             throw new IllegalArgumentException("Please enter the legitimate url!");
         }
     }
 
-    //call this method to get the Map of viewMaps.
+    /**
+     * call this method to get the Map of viewMaps.
+     */
     Map<String, ViewMapInfo> getViewMapLocal(@Nullable String parentPath) {
         parentPath = TextUtils.isEmpty(parentPath) ? context.getFilesDir().getPath() : parentPath;
         return parseViewMap(new File(parentPath, VIEWMAP));
     }
 
+    /**
+     * this task is about download the the latest ViewMap.
+     */
     private static class MapInfoTask extends AsyncTask<Void, Void, File> {
         private final String parentPath;
         private final DownLoadCallBack<File> callBack;
@@ -234,7 +263,11 @@ import java.util.Map;
         }
     }
 
-
+    /**
+     * CallBack of the ViewMap on MainThread.
+     *
+     * @param <Result> the Result
+     */
     interface DownLoadCallBack<Result> {
 
         void onError(EjuException e);
@@ -246,6 +279,9 @@ import java.util.Map;
 
     }
 
+    /**
+     * this task is about check ViewMap state.
+     */
     private static class CheckStateTask extends AsyncTask<Void, Void, ViewMap> {
         private final DownLoadCallBack<ViewMap> callBack;
         private final Context context;
