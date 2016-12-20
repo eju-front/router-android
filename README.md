@@ -1,5 +1,6 @@
 # Router SDK
 
+[![Build Status](https://travis-ci.org/eju-front/router-android.svg?branch=develop)](https://travis-ci.org/eju-front/router-android)
 Android 端动态路由跳转方案，替代默认的 Activity/Fragment 跳转方式。
 
 通过 `viewmap.xml` 快速替换目标页面来避免更新 APP。
