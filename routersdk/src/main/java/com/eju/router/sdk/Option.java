@@ -4,13 +4,13 @@ import java.util.List;
 
 
 /**
- * Created by SidneyXu on 2016/11/30.
- */
-
-/**
- * init the {@link Router} with this ,you can add {@link EjuRequest} to check  update your local ViewMap.
- * <p>and you can set the default ViewMapVersion with {@link Option#defaultVersion}.
- * <p>and also you can add  {@link Option#nativeRouteSchema}.
+ * init the {@link Router} with this,
+ * you can:
+ * <p>add {@link EjuRequest} to check or update your local ViewMap.
+ * <p>set the default ViewMapVersion with {@link Option#defaultVersion}.
+ * <p>add {@link Option#nativeRouteSchema}.
+ *
+ * @author SidneyXu
  */
 public class Option {
 

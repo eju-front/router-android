@@ -1,9 +1,11 @@
 package com.eju.router.sdk;
 
 /**
- * Created by Sidney on 2016/11/25.
+ * view map info
+ * related with viewmap.xml
+ *
+ * @author Sidney
  */
-
 public class ViewMapInfo {
 
     public static final int TYPE_UNSPECIFIED = -1;

@@ -5,7 +5,7 @@ import android.app.Fragment;
 import android.content.Intent;
 
 /**
- * Created by SidneyXu on 2016/11/29.
+ * @author SidneyXu
  */
 /* package */ class DefaultFragmentAdapter implements FragmentAdapter {
 

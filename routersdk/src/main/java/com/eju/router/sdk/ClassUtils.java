@@ -13,6 +13,19 @@ import java.util.Iterator;
 
 /*package*/ class ClassUtils {
 
+    /**
+     * tree representation of class hierarchy
+     * as follow:
+     *
+     * A    B               C
+     * ^    ^               ^
+     * |    |               |
+     * ------(implements)   |(extends)
+     *    |                 |
+     *    -------------------
+     *              |
+     *            this
+     */
     @SuppressWarnings("unused")
     /*package*/ static class TreeClass implements Iterable{
 
@@ -45,6 +58,10 @@ import java.util.Iterator;
             return _class;
         }
 
+        /**
+         * get superclasses and superinterfaces count
+         * @return sum
+         */
         int getCount() {
             int count = 0;
 
@@ -95,6 +112,11 @@ import java.util.Iterator;
         }
     }
 
+    /**
+     * get {@code TreeClass} representation of the specific class
+     * @param clazz the specific class
+     * @return {@code TreeClass} representation
+     */
     /*package*/ static TreeClass getClassHierarchyTree(Class<?> clazz) {
         if(null == clazz) {
             return null;
@@ -123,6 +145,16 @@ import java.util.Iterator;
         return tree;
     }
 
+    /**
+     * get parameterize type of the specific class
+     *
+     * !!! there is limitation in this method at current ver,
+     * this method could only get the superclass's parameterize type of the given class,
+     * if the superclass is not parameterize type, then it will return {@code null}.
+     *
+     * @param clazz the specific class
+     * @return parameterize type
+     */
     /*package*/ static Class<?>[] getParameterizeClassActualClasses(Class<?> clazz) {
         Type type = clazz.getGenericSuperclass();
         if(type instanceof Class<?>) {

@@ -7,11 +7,20 @@ import android.content.Intent;
 import com.eju.router.sdk.exception.EjuException;
 
 /**
- * Created by SidneyXu on 2016/11/29.
+ * handle route action
+ *
+ * @author SidneyXu
  */
-
 /* package */ class RouterHandler {
 
+    /**
+     * start activity
+     *
+     * @param context from
+     * @param className to
+     * @param paramAdapter param
+     * @throws EjuException if error
+     */
     public void startActivity(Context context, String className, ParamAdapter paramAdapter) throws EjuException {
         Intent intent = intent(context, className, paramAdapter);
         if (!(context instanceof Activity)) {
@@ -20,11 +29,27 @@ import com.eju.router.sdk.exception.EjuException;
         context.startActivity(intent);
     }
 
+    /**
+     * start activity from fragment
+     *
+     * @param fragmentAdapter fragment adapter
+     * @param className to
+     * @param paramAdapter param
+     * @throws EjuException if error
+     */
     public void startActivityFromFragment(FragmentAdapter fragmentAdapter, String className, ParamAdapter paramAdapter) throws EjuException {
         Intent intent = intent(fragmentAdapter.getActivity(), className, paramAdapter);
         fragmentAdapter.startActivity(intent);
     }
 
+    /**
+     * start activity for result
+     * @param context from
+     * @param className to
+     * @param paramAdapter param
+     * @param requestCode request code
+     * @throws EjuException if error
+     */
     public void startActivityForResult(Context context, String className, ParamAdapter paramAdapter, int requestCode) throws EjuException {
         Intent intent = intent(context, className, paramAdapter);
         if (context instanceof Activity) {
@@ -35,6 +60,15 @@ import com.eju.router.sdk.exception.EjuException;
         }
     }
 
+    /**
+     * start activity for result from fragment
+     *
+     * @param fragmentAdapter fragment adapter
+     * @param className to
+     * @param paramAdapter param
+     * @param requestCode request code
+     * @throws EjuException if error
+     */
     public void startActivityForResultFromFragment(FragmentAdapter fragmentAdapter, String className, ParamAdapter paramAdapter, int requestCode) throws EjuException {
         Intent intent = intent(fragmentAdapter.getActivity(), className, paramAdapter);
         fragmentAdapter.startActivityForResult(intent, requestCode);

@@ -1,9 +1,11 @@
 package com.eju.router.sdk;
 
 /**
- * Created by Sidney on 2016/11/25.
+ * representation of viewmap.xml itself
+ *
+ * @author Sidney
  */
- class ViewMap {
+/*package*/ class ViewMap {
 
     //下载链接
     public String downloadUrl;

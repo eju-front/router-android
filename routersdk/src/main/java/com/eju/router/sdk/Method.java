@@ -6,8 +6,9 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
 /**
- * Created by Joe on 2016/11/25.
- * Email lovejjfg@gmail.com
+ * http method
+ *
+ * @author Joe {@literal lovejjfg@gmail.com}
  */
 @IntDef(flag = true, value = {
         EjuRequest.METHOD_GET,

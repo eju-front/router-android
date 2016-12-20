@@ -10,7 +10,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 /**
- * Created by Sidney on 2016/11/25.
+ * @author Sidney
  */
 public class ProgressWebView extends WebView {
 

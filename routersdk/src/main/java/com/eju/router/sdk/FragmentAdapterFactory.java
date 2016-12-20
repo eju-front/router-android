@@ -3,11 +3,9 @@ package com.eju.router.sdk;
 import android.app.Fragment;
 
 /**
- * Created by SidneyXu on 2016/11/29.
- */
-
-/**
  * the Factory to create FragmentAdapter
+ *
+ * @author SidneyXu
  */
 /* package */class FragmentAdapterFactory {
     /**

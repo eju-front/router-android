@@ -4,9 +4,10 @@ import android.app.Activity;
 import android.content.Intent;
 
 /**
- * Created by SidneyXu on 2016/11/29.
+ * to compatible with {@link android.app.Fragment} and {@link android.support.v4.app.Fragment}
+ *
+ * @author SidneyXu
  */
-
 /* package */ interface FragmentAdapter {
     /**
      * get the current Activity of the Fragment.

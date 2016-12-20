@@ -3,10 +3,10 @@ package com.eju.router.sdk;
 import com.eju.router.sdk.exception.EjuException;
 
 /**
- * Created by Sidney on 2016/11/28.
+ * @author Sidney
  */
-
 public interface ExceptionHandler {
+
     /**
      * handle {@link EjuException}
      * @param e the EjuException

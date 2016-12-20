@@ -7,9 +7,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 /**
- * Created by SidneyXu on 2016/11/29.
+ * @author SidneyXu
  */
-
 public class ProgressWebViewClient extends WebViewClient {
 
     private Context context;

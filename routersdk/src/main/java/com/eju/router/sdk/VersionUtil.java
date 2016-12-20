@@ -1,10 +1,8 @@
 package com.eju.router.sdk;
 
 /**
- * Created by Joe on 2016/11/30.
- * Email lovejjfg@gmail.com
+ * @author Joe {@literal lovejjfg@gmail.com}
  */
-
 /*package*/ class VersionUtil {
     private static final String delimiter = "\\.";
 

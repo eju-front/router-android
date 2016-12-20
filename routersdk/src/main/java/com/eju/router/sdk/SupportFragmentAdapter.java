@@ -4,13 +4,13 @@ import android.app.Activity;
 import android.content.Intent;
 
 /**
- * Created by SidneyXu on 2016/11/29.
+ * @author SidneyXu
  */
-/* package */class SupportFragmentAdapter implements FragmentAdapter {
+/*package*/ class SupportFragmentAdapter implements FragmentAdapter {
 
     private android.support.v4.app.Fragment fragment;
 
-    public SupportFragmentAdapter(android.support.v4.app.Fragment fragment) {
+    SupportFragmentAdapter(android.support.v4.app.Fragment fragment) {
         this.fragment = fragment;
     }
 
