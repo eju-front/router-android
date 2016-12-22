@@ -3,6 +3,7 @@ package com.eju.router.sdk;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
 
@@ -231,18 +232,27 @@ public class Router {
     }
 
     /* package */ void internalRoute(Context context, URI uri) {
-        String id = uri.getAuthority();
+        ParamAdapter paramAdapter = null;
+        Bundle bundle = null;
         try {
+            String id = null;
+            String query = uri.getQuery();
+            if (!TextUtils.isEmpty(query)) {
+                paramAdapter = new ParamAdapter();
+                bundle = paramAdapter.fromUrl(query);
+
+                id = bundle.getString("router_id");
+            }
+
+            if(TextUtils.isEmpty(id)) {
+                throw new EjuException("no id in native scheme 'eju://'");
+            }
+
             ViewMapInfo info = checkResource(context, id, ViewMapInfo.TYPE_UNSPECIFIED, null);
             if (null != info) {
                 String resource = info.getResource();
-                String query = uri.getQuery();
                 if (info.getType() == ViewMapInfo.TYPE_NATIVE) {
-                    ParamAdapter paramAdapter = null;
-                    if (!TextUtils.isEmpty(query)) {
-                        paramAdapter = new ParamAdapter();
-                        paramAdapter.setParam(paramAdapter.fromUrl(query));
-                    }
+                    paramAdapter.setParam(bundle);
                     goToNative(context, null, resource, paramAdapter, null);
                 } else {
                     if (uri.getQuery() != null) {
