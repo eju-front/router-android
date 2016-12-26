@@ -33,6 +33,7 @@ public class Router {
     private ViewMapInfo info404;
     private RouterHandler routerHandler;
     private ArrayList<String> nativeSchema;
+    private ArrayList<RouterUrl> urlList;
     private boolean initialized;
     private EjuRequest updateRequest;
 
@@ -43,6 +44,8 @@ public class Router {
         routerHandler = new RouterHandler();
         nativeSchema = new ArrayList<>();
         nativeSchema.add("eju");
+
+        urlList = new ArrayList<>();
     }
 
     /**
@@ -108,6 +111,69 @@ public class Router {
             info404 = null;
         } else {
             info404 = new ViewMapInfo(null, ViewMapInfo.TYPE_NATIVE, resource, null);
+        }
+    }
+
+    /**
+     * add a handler to specific url when processing it
+     *
+     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
+     * @param handler handler
+     */
+    public void addHtmlHandlerWithUrl(String pattern, HtmlHandler handler) {
+        RouterUrl routerUrl = getUrlFromListById(pattern);
+        if(null == routerUrl) {
+            routerUrl = new RouterUrl(pattern);
+            urlList.add(routerUrl);
+        }
+        routerUrl.setHandler(handler);
+        routerUrl.setShouldBeIntercept(true);
+    }
+
+    /**
+     * remove a handler of specific url
+     *
+     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
+     */
+    public void removeHtmlHandlerWithUrl(String pattern) {
+        RouterUrl routerUrl = getUrlFromListById(pattern);
+        if(null != routerUrl) {
+            urlList.remove(routerUrl);
+        }
+    }
+
+    /**
+     * register a page that need parameter in native
+     *
+     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
+     */
+    public void registerPageNeedNativeParameter(String pattern) {
+        RouterUrl routerUrl = getUrlFromListById(pattern);
+        if(null == routerUrl) {
+            routerUrl = new RouterUrl(pattern);
+            urlList.add(routerUrl);
+        }
+        routerUrl.setNeedParameter(true);
+        routerUrl.setShouldBeIntercept(true);
+
+    }
+
+    /**
+     * unregister page in current list
+     *
+     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
+     */
+    public void unregisterPageNeedNativeParameter(String pattern) {
+        RouterUrl routerUrl = getUrlFromListById(pattern);
+        if(null == routerUrl) {
+            routerUrl = new RouterUrl(pattern);
+            urlList.add(routerUrl);
+        }
+        routerUrl.setNeedParameter(false);
+        if(null == routerUrl.getHandler()) {
+            routerUrl.setShouldBeIntercept(false);
+        } else {
+            routerUrl.setShouldBeIntercept(true);
         }
     }
 
@@ -233,14 +299,14 @@ public class Router {
 
     /* package */ void internalRoute(Context context, URI uri) {
         ParamAdapter paramAdapter = null;
-        Bundle bundle = null;
+        Bundle bundle;
         try {
             String id = null;
             String query = uri.getQuery();
             if (!TextUtils.isEmpty(query)) {
                 paramAdapter = new ParamAdapter();
-                bundle = paramAdapter.fromUrl(query);
-
+                paramAdapter.setParam(
+                        bundle = paramAdapter.fromUrl(query));
                 id = bundle.getString("router_id");
             }
 
@@ -252,13 +318,12 @@ public class Router {
             if (null != info) {
                 String resource = info.getResource();
                 if (info.getType() == ViewMapInfo.TYPE_NATIVE) {
-                    paramAdapter.setParam(bundle);
                     goToNative(context, null, resource, paramAdapter, null);
                 } else {
-                    if (uri.getQuery() != null) {
-                        resource = resource + "?" + query;
-                    }
-                    goToWeb(context, resource, null);
+//                    if (uri.getQuery() != null) {
+//                        resource = resource + "?" + query;
+//                    }
+                    goToWeb(context, resource, paramAdapter);
                 }
             }
         } catch (EjuException e) {
@@ -435,21 +500,27 @@ public class Router {
     }
 
     private void goToWeb(Context context, String resource, ParamAdapter paramAdapter) {
-        String url = resource;
+//        String url = resource;
+        Bundle bundle = null;
         try {
             if (null != paramAdapter) {
-                if (url.contains("?")) {
-                    url += "&" + paramAdapter.toURL();
-                } else {
-                    url += "?" + paramAdapter.toURL();
-                }
+//                if (url.contains("?")) {
+//                    url += "&" + paramAdapter.toURL();
+//                } else {
+//                    url += "?" + paramAdapter.toURL();
+//                }
+                bundle = paramAdapter.toBundle();
             }
         } catch (EjuParamException e) {
             e.printStackTrace();
         }
         Intent intent = new Intent();
         intent.setClass(context, WebViewActivity.class);
-        intent.putExtra(WebViewActivity.EXTRA_URL, url);
+//        intent.putExtra(WebViewActivity.EXTRA_URL, url);
+        intent.putExtra(WebViewActivity.EXTRA_URL, resource);
+        if(null != bundle) {
+            intent.putExtras(bundle);
+        }
         context.startActivity(intent);
     }
 
@@ -506,7 +577,7 @@ public class Router {
         }
     }
 
-    /* package */boolean isNativeRouteSchema(String url) {
+    /*package*/ boolean isNativeRouteSchema(String url) {
         if (url.startsWith("http://") || url.startsWith("https://")) {
             return false;
         }
@@ -517,6 +588,32 @@ public class Router {
             }
         }
         return false;
+    }
+
+    /*package*/ RouterUrl getRouterUrlMatchUrl(String url) {
+        if(!url.endsWith(".html")) {
+            return null;
+        }
+
+        RouterUrl routerUrl = null;
+        for (RouterUrl rUrl : urlList) {
+            if(rUrl.isMatch(url)) {
+                routerUrl = rUrl;
+                break;
+            }
+        }
+        return routerUrl;
+    }
+
+    private RouterUrl getUrlFromListById(String pattern) {
+        RouterUrl routerUrl = null;
+        for (RouterUrl url : urlList) {
+            if(pattern.equalsIgnoreCase(url.getId())) {
+                routerUrl = url;
+                break;
+            }
+        }
+        return routerUrl;
     }
 
     private void checkNull(Object object, String name) {

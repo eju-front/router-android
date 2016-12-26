@@ -25,5 +25,6 @@ public class App extends Application {
                 .build();
         router.initialize(this, option);
         router.set404ViewMap(DefaultActivity.class.getName());
+        router.registerPageNeedNativeParameter(".*172\\.29\\.32\\.215:8080.*");
     }
 }

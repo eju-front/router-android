@@ -11,8 +11,8 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-
     }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -23,6 +23,8 @@ android {
     lintOptions {
         abortOnError false;
     }
+
+    defaultPublishConfig "debug"
 }
 
 task releaseJar(type: Jar) {

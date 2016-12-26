@@ -2,7 +2,10 @@ package com.eju.router.sdk;
 
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
+import android.os.Parcelable;
 
+import com.eju.router.sdk.exception.EjuException;
 import com.eju.router.sdk.exception.EjuParamException;
 
 import org.junit.Test;
@@ -13,6 +16,7 @@ import org.robolectric.annotation.Config;
 import org.assertj.core.api.Assertions;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -28,10 +32,44 @@ import java.util.Map;
 @Config(sdk = 23, manifest = Config.NONE)
 public class ParamAdapterTest extends BaseTest {
 
-    private final class TestParam implements Serializable {
+    private static final class TestParam implements Serializable, Parcelable {
         String s1;
         String s2;
         List<String> l1;
+
+        TestParam() {
+
+        }
+
+        TestParam(Parcel in) {
+            s1 = in.readString();
+            s2 = in.readString();
+            l1 = in.createStringArrayList();
+        }
+
+        public static final Creator<TestParam> CREATOR = new Creator<TestParam>() {
+            @Override
+            public TestParam createFromParcel(Parcel in) {
+                return new TestParam(in);
+            }
+
+            @Override
+            public TestParam[] newArray(int size) {
+                return new TestParam[size];
+            }
+        };
+
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeString(s1);
+            dest.writeString(s2);
+            dest.writeStringList(l1);
+        }
     }
 
     private ParamAdapter mAdapter;
@@ -187,17 +225,21 @@ public class ParamAdapterTest extends BaseTest {
         map.put("long", 0xffff00000000ffffL);
 
         mAdapter.setParam(map);
-        Bundle bundle = mAdapter.toBundle();
-        Assertions.assertThat(bundle.get("string")).isNotNull().isEqualTo("aaa");
-        Assertions.assertThat(bundle.get("int")).isNotNull().isEqualTo(1024);
-        Assertions.assertThat(bundle.get("boolean")).isNotNull().isEqualTo(false);
-        Assertions.assertThat(bundle.get("char")).isNotNull().isEqualTo('a');
-        Assertions.assertThat(bundle.get("byte")).isNotNull().isEqualTo((byte)0xf0);
-        Assertions.assertThat(bundle.get("short")).isNotNull().isEqualTo((short)0x0f);
-        Assertions.assertThat(bundle.get("float")).isNotNull().isEqualTo(123.45f);
-        Assertions.assertThat(bundle.get("double"))
-                .isNotNull().isEqualTo(1.2345123456458765138732165873621354876f);
-        Assertions.assertThat(bundle.get("long")).isNotNull().isEqualTo(0xffff00000000ffffL);
+        try {
+            Bundle bundle = mAdapter.toBundle();
+            Assertions.assertThat(bundle.get("string")).isNotNull().isEqualTo("aaa");
+            Assertions.assertThat(bundle.get("int")).isNotNull().isEqualTo(1024);
+            Assertions.assertThat(bundle.get("boolean")).isNotNull().isEqualTo(false);
+            Assertions.assertThat(bundle.get("char")).isNotNull().isEqualTo('a');
+            Assertions.assertThat(bundle.get("byte")).isNotNull().isEqualTo((byte)0xf0);
+            Assertions.assertThat(bundle.get("short")).isNotNull().isEqualTo((short)0x0f);
+            Assertions.assertThat(bundle.get("float")).isNotNull().isEqualTo(123.45f);
+            Assertions.assertThat(bundle.get("double"))
+                    .isNotNull().isEqualTo(1.2345123456458765138732165873621354876f);
+            Assertions.assertThat(bundle.get("long")).isNotNull().isEqualTo(0xffff00000000ffffL);
+        } catch (EjuParamException e) {
+            Assertions.fail("to bundle fail");
+        }
     }
 
     @Test
@@ -260,6 +302,145 @@ public class ParamAdapterTest extends BaseTest {
                         "%22item1%22%2C%22item2%22%5D%7D");
                 //"param1={\"s1\":\"first\",\"s2\":\"second\",\"l1\":[\"item1\",\"item2\"]}");
         Assertions.assertThat(bundle.size()).isNotNull().isGreaterThan(0);
+    }
+
+    @Test
+    public void testHtmlHandler() {
+        ArrayList<String> stringList = new ArrayList<>();
+        stringList.add("abc");
+        stringList.add("123");
+        stringList.add("AABBCC");
+
+        final Bundle bundle = new Bundle();
+        bundle.putStringArrayList("param", stringList);
+        bundle.putString("string", "aaa");
+        bundle.putInt("int", 1024);
+        bundle.putBoolean("boolean", false);
+        bundle.putChar("char", 'a');
+        bundle.putByte("byte", (byte)0xf0);
+        bundle.putShort("short", (short)0x0f);
+        bundle.putFloat("float", 123.45f);
+        bundle.putDouble("double", 1.2345123456458764);
+        bundle.putLong("long", 0xffff00000000ffffL);
+
+        TestParam param = new TestParam();
+        param.s1 = "first";
+        param.s2 = "second";
+        param.l1 = new ArrayList<>();
+        param.l1.add("item1");
+        param.l1.add("item2");
+        bundle.putSerializable("param1", param);
+
+        TestParam[] params = new TestParam[3];
+        params[0] = newTestParam("array1", "array1", null);
+        List<String> list = new ArrayList<>();
+        list.add("array2-list1");
+        list.add("array2-list2");
+        list.add("array2-list3");
+        params[1] = newTestParam("array2", "array2", list);
+        params[2] = newTestParam("array3", "array3", null);
+        bundle.putParcelableArray("arrayarray", params);
+
+        HtmlHandler DEFAULT_PARAMETER_HANDLER = new HtmlHandler() {
+
+            private final String END_HTML = "</html>";
+            private final String SCRIPT =
+                    "<script type=\"text/javascript\">" +
+                            "var window.eju_router_param = {" +
+                            "%s" +
+                            "};" +
+                            "</script>";
+
+            @Override
+            public byte[] handle(String url, byte[] contents) throws EjuException {
+                String html = new String(contents);
+
+                int i = html.lastIndexOf(END_HTML);
+                if(-1 == i) {
+                    throw new EjuException(String.format("[%s] has wrong html format !", url));
+                }
+
+                int length = html.length();
+                if(i + END_HTML.length() > length) {
+                    html = html.substring(0, i + END_HTML.length());
+                }
+
+                StringBuilder builder = new StringBuilder();
+                for(String key : bundle.keySet()) {
+                    builder.append(key).append(':').append(parseObjectOfJS(bundle.get(key)))
+                            .append(',');
+                }
+                String params = String.format(SCRIPT, builder.toString());
+
+                i = html.indexOf("</head>");
+                html = html.substring(0, i).concat(params).concat(html.substring(i));
+
+                return html.getBytes();
+            }
+
+            private String parseObjectOfJS(Object object) {
+                if(null == object) {
+                    return "null";
+                }
+
+                if(object instanceof String) {
+                    return "\"" + object + "\"";
+                } else if(object instanceof ArrayList) {
+                    StringBuilder builder = new StringBuilder();
+                    builder.append('[');
+                    for(Object o : ((ArrayList)object)) {
+                        builder.append(parseObjectOfJS(o)).append(',');
+                    }
+                    builder.append(']');
+                    return builder.toString();
+                } else if(object instanceof Boolean
+                        || object instanceof Byte
+                        || object instanceof Character
+                        || object instanceof Short
+                        || object instanceof Integer
+                        || object instanceof Float
+                        || object instanceof Double
+                        || object instanceof Long) {
+                    return object.toString();
+                } else {
+                    StringBuilder builder = new StringBuilder();
+
+                    Class<?> clazz = object.getClass();
+                    if(clazz.isArray()) {
+                        builder.append('[');
+                        for(Object o : ((Object[])object)) {
+                            builder.append(parseObjectOfJS(o)).append(',');
+                        }
+                        builder.append(']');
+                    } else {
+                        Field[] fields = clazz.getDeclaredFields();
+
+                        builder.append("{");
+                        for(Field field : fields) {
+                            if(field.getDeclaringClass() != clazz
+                                    || field.getName().matches(".*this.*")) {
+                                continue;
+                            }
+
+                            try {
+                                builder.append(field.getName()).append(':')
+                                        .append(parseObjectOfJS(field.get(object)));
+                                builder.append(',');
+                            } catch (IllegalAccessException ignored) {}
+                        }
+                        builder.append("}");
+                    }
+                    return builder.toString();
+                }
+            }
+        };
+        try {
+            byte[] buffer = DEFAULT_PARAMETER_HANDLER.handle("aaa",
+                    "<html><head></head><body>hello world !</body></html>".getBytes());
+            System.out.println(new String(buffer));
+        } catch (EjuException e) {
+            Assertions.fail("wrong in parameter html handler");
+        }
     }
 
     private TestParam newTestParam(String s1, String s2, List<String> list) {
