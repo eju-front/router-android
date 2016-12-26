@@ -292,8 +292,8 @@ import java.util.Set;
         try {
             MapUtil.foreach(mParams, new MapUtil.Consumer<String, Object>() {
                 @Override
-                public boolean consume(String key, Object value) {
-                    try {
+                public boolean consume(String key, Object value) throws Exception {
+//                    try {
                         ParamConverter<Object> converter = getParamConverter(value.getClass());
 
                         // TODO ignore the case that url do not need encode
@@ -302,9 +302,9 @@ import java.util.Set;
                             builder.append(url);
                             builder.append("&");
                         }
-                    } catch (EjuParamException ex) {
-                        EjuLog.e(ex.getMessage());
-                    }
+//                    } catch (EjuParamException ex) {
+//                        EjuLog.e(ex.getMessage());
+//                    }
                     return false;
                 }
             });
@@ -318,9 +318,10 @@ import java.util.Set;
 
     /**
      * turn current parameter map to {@code Bundle} representation
+     *
      * @return map bundle representation
      */
-    /*package*/ Bundle toBundle() {
+    /*package*/ Bundle toBundle() throws EjuParamException {
         final Bundle bundle = new Bundle();
         try {
             MapUtil.foreach(mParams, new MapUtil.Consumer<String, Object>() {
@@ -331,7 +332,7 @@ import java.util.Set;
                 }
             });
         } catch (Exception e) {
-            throw new IllegalStateException(e);
+            throw new EjuParamException(e);
         }
         return bundle;
     }
