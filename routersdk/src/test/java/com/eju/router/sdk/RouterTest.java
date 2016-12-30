@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 /**
- * Created by Sidney on 2016/11/25.
+ * @author Sidney
  */
 @RunWith(BaseTestRunner.class)
 @Config(sdk = 23, manifest = Config.NONE)

@@ -42,7 +42,7 @@ import java.util.Map;
          *
          * @param key      key of entry
          * @param value    value of entry
-         * @return whether should handle next pair
+         * @return whether host application need break current iterator
          * @throws Exception if error
          */
         boolean consume(K key, V value) throws Exception;
