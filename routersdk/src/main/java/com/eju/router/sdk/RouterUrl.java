@@ -3,13 +3,15 @@ package com.eju.router.sdk;
 import java.util.regex.Pattern;
 
 /**
- * class description
+ * Router url
  *
  * @author tangqianwei
  */
 class RouterUrl {
 
     private String id;
+
+    private String currentUrl;
     private Pattern urlPattern;
 
     private boolean needParameter = false;
@@ -51,5 +53,13 @@ class RouterUrl {
 
     void setHandler(HtmlHandler handler) {
         this.handler = handler;
+    }
+
+    String getCurrentUrl() {
+        return currentUrl;
+    }
+
+    void setCurrentUrl(String currentUrl) {
+        this.currentUrl = currentUrl;
     }
 }

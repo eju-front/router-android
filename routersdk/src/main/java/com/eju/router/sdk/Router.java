@@ -117,8 +117,8 @@ public class Router {
     /**
      * add a handler to specific url when processing it
      *
-     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
-     * @param handler handler
+     * @param   pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
+     * @param   handler handler.
      */
     public void addHtmlHandlerWithUrl(String pattern, HtmlHandler handler) {
         RouterUrl routerUrl = getUrlFromListById(pattern);
@@ -598,6 +598,7 @@ public class Router {
         RouterUrl routerUrl = null;
         for (RouterUrl rUrl : urlList) {
             if(rUrl.isMatch(url)) {
+                rUrl.setCurrentUrl(url);
                 routerUrl = rUrl;
                 break;
             }

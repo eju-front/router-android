@@ -18,5 +18,5 @@ public interface HtmlHandler {
      * @throws EjuException if error
      */
     byte[] handle(String url, byte[] contents) throws EjuException;
-    //
+    // need parameter in {@link #handle(String, byte[])} ?
 }

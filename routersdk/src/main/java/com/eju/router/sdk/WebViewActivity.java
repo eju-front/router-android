@@ -3,16 +3,10 @@ package com.eju.router.sdk;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.webkit.WebResourceResponse;
-import android.webkit.WebView;
 
 import com.eju.router.sdk.exception.EjuException;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayInputStream;
 import java.lang.reflect.Field;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 
 /**
@@ -43,13 +37,10 @@ public class WebViewActivity extends Activity implements HtmlHandler {
 
 
     private ProgressWebView webView;
-    private Router router;
-    private String url;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        router = Router.getInstance();
         webView = getWebView();
         setContentView(webView);
 
@@ -64,70 +55,16 @@ public class WebViewActivity extends Activity implements HtmlHandler {
     protected ProgressWebView getWebView() {
         webView = new ProgressWebView(this);
         webView.disableSideEffect();
-        webView.setWebViewClient(new ProgressWebViewClient(this) {
-
-            private EjuHttpClient mHttpClient = EjuHttpClient.newClient(5000);
-
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                EjuLog.d("shouldOverrideUrlLoading");
-
-                WebViewActivity.this.url = url;
-                if (router.isNativeRouteSchema(url)) {
-                    try {
-                        URI uri = new URI(url);
-                        router.internalRoute(WebViewActivity.this, uri);
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                        router.broadcastException(new EjuException(EjuException.UNKNOWN_ERROR, e.getMessage()));
-                    }
-                    return true;
-                }
-                return super.shouldOverrideUrlLoading(view, url);
-            }
-
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, final String url) {
-                RouterUrl routerUrl = router.getRouterUrlMatchUrl(url);
-                if(null == routerUrl || !routerUrl.shouldBeIntercept()) {
-                    return null;
-                }
-
-                try {
-                    EjuResponse response = mHttpClient.execute(
-                            new EjuRequest.Builder()
-                                    .url(url)
-                                    .method(EjuRequest.METHOD_GET)
-                                    .build());
-                    byte[] content = response.getBody();
-
-                    // user's handler
-                    HtmlHandler handler = routerUrl.getHandler();
-                    if(null != handler) {
-                        content = handler.handle(url, content);
-                    }
-
-                    // need parameter in native ?
-                    if(routerUrl.isNeedParameter()) {
-                        content = WebViewActivity.this.handle(url, content);
-                    }
-
-                    return new WebResourceResponse(
-                            "text/html", "utf-8",
-                            new BufferedInputStream(
-                                    new ByteArrayInputStream(content)));
-                } catch (EjuException e) {
-                    return null;
-                }
-            }
-        });
+        webView.getRemoteInterceptor().setParamHandler(this);
+        webView.getLocalInterceptor().setParamHandler(this);
         return webView;
     }
 
     private void load(String url) {
-        if (null == url) {
+        if(null == url) {
             return;
         }
+
         webView.loadUrl(url);
     }
 
@@ -189,13 +126,14 @@ public class WebViewActivity extends Activity implements HtmlHandler {
     }
 
     private String parseObjectOfJS(Object object) {
+        StringBuilder builder = new StringBuilder();
+
         if(null == object) {
-            return "null";
+            builder.append("null");
+            return builder.toString();
         }
 
         Class<?> clazz = object.getClass();
-        StringBuilder builder = new StringBuilder();
-
         if(String.class.isAssignableFrom(clazz)) {
             builder.append('"').append(object).append('"');
         } else if(ArrayList.class.isAssignableFrom(clazz)
@@ -215,7 +153,7 @@ public class WebViewActivity extends Activity implements HtmlHandler {
                 || Long.class.isAssignableFrom(clazz)) {
             builder.append(object);
         } else {
-            builder.append("{");
+            builder.append('{');
 
             Field[] fields = clazz.getDeclaredFields();
             for(Field field : fields) {
@@ -232,7 +170,7 @@ public class WebViewActivity extends Activity implements HtmlHandler {
                     builder.append(',');
                 } catch (IllegalAccessException ignored) {}
             }
-            builder.append("}");
+            builder.append('}');
         }
 
         return builder.toString();
