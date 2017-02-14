@@ -17,6 +17,7 @@ import java.io.ByteArrayInputStream;
 public class ProgressWebViewClient extends WebViewClient {
 
     protected Context context;
+    private static final String JS_DEVICE_READY = "javascript:onDeviceReady()";
     private ProgressDialog progressDialog;
 
     ProgressWebViewClient(Context context) {
@@ -41,6 +42,7 @@ public class ProgressWebViewClient extends WebViewClient {
         if (null != progressDialog) {
             progressDialog.dismiss();
         }
+        view.loadUrl(JS_DEVICE_READY);
     }
 
     @Override

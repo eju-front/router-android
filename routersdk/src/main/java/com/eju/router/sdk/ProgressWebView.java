@@ -7,6 +7,7 @@ import android.os.Build;
 import android.util.AttributeSet;
 import android.view.View;
 import android.webkit.WebResourceResponse;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -192,6 +193,8 @@ public class ProgressWebView extends WebView {
         setClickable(true);
         setFocusableInTouchMode(true);
         setWebViewClient(getWebViewClient());
+        setWebChromeClient(new WebChromeClient());
+
     }
 
     private class NativeHtmlLoader implements HtmlLoader {
