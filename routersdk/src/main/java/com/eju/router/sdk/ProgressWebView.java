@@ -5,7 +5,9 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Build;
 import android.util.AttributeSet;
+import android.util.Log;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -185,7 +187,7 @@ public class ProgressWebView extends WebView {
         };
     }
 
-    @SuppressLint("SetJavaScriptEnabled")
+    @SuppressLint({"SetJavaScriptEnabled", "AddJavascriptInterface"})
     private void initialize() {
         WebSettings webSettings = getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -194,6 +196,19 @@ public class ProgressWebView extends WebView {
         setFocusableInTouchMode(true);
         setWebViewClient(getWebViewClient());
         setWebChromeClient(new WebChromeClient());
+        addJavascriptInterface(new JsCallBack() {
+            @Override
+            @JavascriptInterface
+            public String onMenuTextReady(String text) {//参数传给本地 返回值返回给调用者
+                Log.e("TAG", "onMenuTextReady: " + text);
+                return "It's return value";
+            }
+            @Override
+            @JavascriptInterface
+            public void onMenuTextClicked(String url) {
+                Log.e("TAG", "onMenuTextClicked: " + url);
+            }
+        },"Android");
 
     }
 

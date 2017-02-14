@@ -19,11 +19,24 @@
         <a href="http://www.baidu.com"> 跳转到 Baidu</a>
         <a href="eju://host/path?router_id=local&z=1&foo=bar">跳转到本地 Html</a>
         <a href="eju://host/path?router_id=remote&z=1&foo=bar&name=樱桃小丸子">跳转到远程 Html</a>
+        <input type="button" onclick="onMenuTextClicked()" value="onMenuTextClicked">
+        <input type="button" onclick="onMenuTextReady()" value="onMenuTextReady">
     </div>
     <div id="footer">
         <p>footer</p>
     </div>
 </div>
 <script style="text/javascript" src="js/index.js"></script>
+<script>
+    function onMenuTextReady() {
+    var value =  Android.onMenuTextReady("onMenuTextReady")
+    Android.onMenuTextClicked(value)
+
+}
+    function onMenuTextClicked() {
+    Android.onMenuTextClicked("onMenuTextClicked")
+}
+
+</script>
 </body>
 </html>
