@@ -25,6 +25,7 @@
         <input type="button" id="enter" value="跳转百度" onclick="jumpBaiDu();"/>
         <input type="button" id="enter1" value="跳转本地" onclick="jumpLocal();"/>
         <input type="button" id="enter2" value="跳转本地HTML" onclick="jumpLocalHTML();"/>
+        <input type="button" id="enter3" value="显示或者隐藏Toolbar" onclick="showHideToolBar();"/>
 
     </div>
     <div id="footer">
@@ -80,7 +81,17 @@
                     document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
                 }
             );
+        }
 
+        function showHideToolBar() {
+            //call native method
+            window.WebViewJavascriptBridge.callHandler(
+                'ToolBarJs'
+                , 'toggleToolBar'
+                , function(responseData) {
+                    document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
+                }
+            );
         }
 
         <!--function testClick1() {-->
@@ -131,6 +142,7 @@
                 <!--responseCallback(responseData);-->
             <!--});-->
         <!--})-->
+
 
 
 </script>
