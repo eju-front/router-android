@@ -8,8 +8,8 @@ import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
 import android.webkit.JavascriptInterface;
-import android.webkit.WebResourceResponse;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceResponse;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -21,13 +21,15 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
 
 /**
  * @author Sidney
  */
-public class ProgressWebView extends WebView {
+public class ProgressWebView extends BridgeWebView {
 
     private static final String FILE_SCHEME = "file://";
 
@@ -125,7 +127,7 @@ public class ProgressWebView extends WebView {
     public void loadUrl(String url) {
         EjuLog.d(String.format("loadUrl:[%s]", url));
 
-        if(url.startsWith(FILE_SCHEME)) {
+        if (url.startsWith(FILE_SCHEME)) {
             url = "eju://" + url.substring(FILE_SCHEME.length());
         }
 
@@ -152,24 +154,24 @@ public class ProgressWebView extends WebView {
 
     protected WebViewClient getWebViewClient() {
 
-        return new ProgressWebViewClient(getContext()) {
+        return new ProgressWebViewClient(this) {
 
-            @Override
-            public boolean shouldOverrideUrlLoading(WebView view, String url) {
-                EjuLog.d("shouldOverrideUrlLoading");
-
-                if (router.isNativeRouteSchema(url)) {
-                    try {
-                        URI uri = new URI(url);
-                        router.internalRoute(context, uri);
-                    } catch (URISyntaxException e) {
-                        e.printStackTrace();
-                        router.broadcastException(new EjuException(EjuException.UNKNOWN_ERROR, e.getMessage()));
-                    }
-                    return true;
-                }
-                return super.shouldOverrideUrlLoading(view, url);
-            }
+//            @Override
+//            public boolean shouldOverrideUrlLoading(WebView view, String url) {
+//                EjuLog.d("shouldOverrideUrlLoading");
+//
+//                if (router.isNativeRouteSchema(url)) {
+//                    try {
+//                        URI uri = new URI(url);
+//                        router.internalRoute(context, uri);
+//                    } catch (URISyntaxException e) {
+//                        e.printStackTrace();
+//                        router.broadcastException(new EjuException(EjuException.UNKNOWN_ERROR, e.getMessage()));
+//                    }
+//                    return true;
+//                }
+//                return super.shouldOverrideUrlLoading(view, url);
+//            }
 
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, String url) {
@@ -203,6 +205,7 @@ public class ProgressWebView extends WebView {
                 Log.e("TAG", "onMenuTextReady: " + text);
                 return "It's return value";
             }
+
             @Override
             @JavascriptInterface
             public void onMenuTextClicked(String url) {

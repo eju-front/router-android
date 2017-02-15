@@ -57,6 +57,8 @@ public class WebViewActivity extends Activity implements HtmlHandler {
         webView.disableSideEffect();
         webView.getRemoteInterceptor().setParamHandler(this);
         webView.getLocalInterceptor().setParamHandler(this);
+        webView.setDefaultHandler(new DefaultHandler(this));
+        webView.send("Hello ，Kugou");
         return webView;
     }
 

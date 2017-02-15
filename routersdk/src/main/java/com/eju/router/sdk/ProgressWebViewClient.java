@@ -10,19 +10,26 @@ import android.webkit.WebViewClient;
 import com.eju.router.sdk.exception.EjuException;
 
 import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 /**
  * @author SidneyXu
  */
-public class ProgressWebViewClient extends WebViewClient {
+public class ProgressWebViewClient extends BridgeWebViewClient {
 
     protected Context context;
     private static final String JS_DEVICE_READY = "javascript:onDeviceReady()";
     private ProgressDialog progressDialog;
 
-    ProgressWebViewClient(Context context) {
-        this.context = context;
+
+    public ProgressWebViewClient(BridgeWebView webView) {
+        super(webView);
+        this.context = webView.getContext();
     }
+//    ProgressWebViewClient(Context context) {
+//        this.context = context;
+//    }
 
     @Override
     public void onPageStarted(WebView view, String url, Bitmap favicon) {
