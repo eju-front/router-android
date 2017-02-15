@@ -155,8 +155,7 @@ public class ProgressWebView extends BridgeWebView {
     protected WebViewClient getWebViewClient() {
 
         return new ProgressWebViewClient(this) {
-
-//            @Override
+            //            @Override
 //            public boolean shouldOverrideUrlLoading(WebView view, String url) {
 //                EjuLog.d("shouldOverrideUrlLoading");
 //

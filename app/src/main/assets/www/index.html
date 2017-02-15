@@ -22,8 +22,9 @@
         <input type="button" onclick="onMenuTextClicked()" value="onMenuTextClicked">
         <input type="button" onclick="onMenuTextReady()" value="onMenuTextReady">
 
-        <input type="button" id="enter" value="发消息给Native" onclick="testClick();"
-        />
+        <input type="button" id="enter" value="跳转百度" onclick="jumpBaiDu();"/>
+        <input type="button" id="enter1" value="跳转本地" onclick="jumpLocal();"/>
+        <input type="button" id="enter2" value="跳转本地HTML" onclick="jumpLocalHTML();"/>
 
     </div>
     <div id="footer">
@@ -45,10 +46,34 @@
             document.getElementById("show").innerHTML = "xxx"+document.getElementsByTagName("html")[0].innerHTML;
         }
 
-        function testClick() {
+        function jumpBaiDu() {
 
             //send message to native
             var data = "http://www.baidu.com";
+            window.WebViewJavascriptBridge.send(
+                data
+                , function(responseData) {
+                    document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
+                }
+            );
+
+        }
+        function jumpLocal() {
+
+            //send message to native
+            var data = "eju://host/path?router_id=target&x=1&y=abc&name=樱桃小丸子";
+            window.WebViewJavascriptBridge.send(
+                data
+                , function(responseData) {
+                    document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
+                }
+            );
+
+        }
+        function jumpLocalHTML() {
+
+            //send message to native
+            var data = "eju://host/path?router_id=local_html&z=1&foo=bar";
             window.WebViewJavascriptBridge.send(
                 data
                 , function(responseData) {

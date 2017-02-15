@@ -25,6 +25,12 @@
       "resource": "file:///android_asset/www/index.html"
     },
     {
+      "id": "local_html",
+      "description": "本地 Html",
+      "type": 1,
+      "resource": "file:///android_asset/www/demo.html"
+    },
+    {
       "id": "fragment",
       "description": "Fragment",
       "type": 0,

@@ -28,9 +28,17 @@ public class DefaultHandler implements BridgeHandler {
     String TAG = "DefaultHandler";
 
     @Override
-    public void handler(String url, CallBackFunction function) {
+    public void handler(BridgeWebView webView, String url, CallBackFunction function) {
         Log.e(TAG, "handler: " + url);
         EjuLog.d("shouldOverrideUrlLoading");
+        if (function != null) {
+            function.onCallBack("DefaultHandler response data:" + url);
+        }
+        if (url.startsWith("http://") || url.startsWith("https://")) {
+            webView.loadUrl(url);
+            return;
+        }
+
         if (router.isNativeRouteSchema(url)) {
             try {
                 URI uri = new URI(url);
@@ -39,9 +47,6 @@ public class DefaultHandler implements BridgeHandler {
                 e.printStackTrace();
                 router.broadcastException(new EjuException(EjuException.UNKNOWN_ERROR, e.getMessage()));
             }
-        }
-        if (function != null) {
-            function.onCallBack("DefaultHandler response data:" + url);
         }
     }
 

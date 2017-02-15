@@ -35,6 +35,7 @@
         <activity android:name=".activity.DefaultActivity" />
         <activity android:name=".activity.TargetFragmentActivity" />
         <activity
+            android:theme="@style/AppTheme_NoActionBar"
             android:name="com.eju.router.sdk.WebViewActivity"
             android:launchMode="singleTop" />
     </application>

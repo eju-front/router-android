@@ -189,7 +189,7 @@ public class BridgeWebView extends WebView implements WebViewJavascriptBridge {
 								handler = defaultHandler;
 							}
 							if (handler != null){
-								handler.handler(m.getData(), responseFunction);
+								handler.handler(BridgeWebView.this,m.getData(), responseFunction);
 							}
 						}
 					}
