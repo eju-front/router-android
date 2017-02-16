@@ -26,6 +26,7 @@
         <input type="button" id="enter1" value="跳转本地" onclick="jumpLocal();"/>
         <input type="button" id="enter2" value="跳转本地HTML" onclick="jumpLocalHTML();"/>
         <input type="button" id="enter3" value="显示或者隐藏Toolbar" onclick="showHideToolBar();"/>
+        <input type="button" id="enter4" value="显示Menu" onclick="showHideMenu();"/>
 
     </div>
     <div id="footer">
@@ -88,6 +89,16 @@
             window.WebViewJavascriptBridge.callHandler(
                 'ToolBarJs'
                 , 'toggleToolBar'
+                , function(responseData) {
+                    document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
+                }
+            );
+        }
+        function showHideMenu() {
+            //call native method
+            window.WebViewJavascriptBridge.callHandler(
+                'ToolBarJs'
+                , 'toggleMenu'
                 , function(responseData) {
                     document.getElementById("show").innerHTML = "send get responseData from java, data = " + responseData
                 }

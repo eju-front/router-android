@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
 
@@ -36,6 +37,7 @@ public class Router {
     private ArrayList<RouterUrl> urlList;
     private boolean initialized;
     private EjuRequest updateRequest;
+    private Class webViewActivity;
 
     /**
      * Constructs a new {@code Router}.
@@ -515,7 +517,10 @@ public class Router {
             e.printStackTrace();
         }
         Intent intent = new Intent();
-        intent.setClass(context, WebViewActivity.class);
+        if (webViewActivity == null) {
+            throw new RuntimeException("请设置对应的WebViewActivity");
+        }
+        intent.setClass(context, webViewActivity);
 //        intent.putExtra(WebViewActivity.EXTRA_URL, url);
         intent.putExtra(WebViewActivity.EXTRA_URL, resource);
         if(null != bundle) {
@@ -621,5 +626,9 @@ public class Router {
         if (null == object) {
             throw new RuntimeException(name + " is necessary.");
         }
+    }
+
+    public void setWebViewActivity(@NonNull Class<? extends WebViewActivity> clazz) {
+        webViewActivity = clazz;
     }
 }

@@ -2,11 +2,9 @@ package com.eju.router.sdk;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.LayoutRes;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.View;
 
 import com.eju.router.sdk.exception.EjuException;
 
@@ -25,7 +23,7 @@ import java.util.ArrayList;
  * @author SidneyXu
  */
 
-public class WebViewActivity extends AppCompatActivity implements HtmlHandler, BridgeHandler {
+public abstract class WebViewActivity extends AppCompatActivity implements HtmlHandler {
     private static final String TAG = WebViewActivity.class.getSimpleName();
     public static final String EXTRA_URL = "_url";
 
@@ -44,21 +42,36 @@ public class WebViewActivity extends AppCompatActivity implements HtmlHandler, B
 
     private ProgressWebView webView;
     private Router router;
-    //    private ActionBar actionBar;
-    private Toolbar toolbar;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected final void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        webView = getWebView();
-        setContentView(R.layout.activity_web);
-        webView = (ProgressWebView) findViewById(R.id.web);
-        getWebView();
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        setTitle("这不是标题");
-
+        setContentView(getLayoutId());
+        initView(savedInstanceState);
+        webView = getWebView();
+        initWebView();
         handleIntent();
+
+//        toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        setSupportActionBar(toolbar);
+//        setTitle("这不是标题");
+
+    }
+
+    protected abstract void initView(Bundle savedInstanceState);
+
+    protected abstract
+    @LayoutRes
+    int getLayoutId();
+
+    private void initWebView() {
+        if (webView == null) {
+            throw new RuntimeException("请先设置对应的WebView");
+        }
+        webView.disableSideEffect();
+        webView.getRemoteInterceptor().setParamHandler(this);
+        webView.getLocalInterceptor().setParamHandler(this);
+        webView.setDefaultHandler(new DefaultHandler(this));
     }
 
     /**
@@ -66,23 +79,7 @@ public class WebViewActivity extends AppCompatActivity implements HtmlHandler, B
      *
      * @return an instance of com.eju.router.sdk.ProgressWebView
      */
-    protected ProgressWebView getWebView() {
-//        webView = new ProgressWebView(this);
-        webView.disableSideEffect();
-        webView.getRemoteInterceptor().setParamHandler(this);
-        webView.getLocalInterceptor().setParamHandler(this);
-        webView.setDefaultHandler(this);
-        webView.registerHandler("ToolBarJs", new BridgeHandler() {
-            @Override
-            public void handler(BridgeWebView webView, String url, CallBackFunction function) {
-                if (TextUtils.equals("toggleToolBar", url)) {
-                    toolbar.setVisibility(toolbar.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-                }
-            }
-        });
-        webView.send("Hello ，Kugou");
-        return webView;
-    }
+    public abstract ProgressWebView getWebView();
 
     private void load(String url) {
         if (null == url) {
@@ -201,28 +198,13 @@ public class WebViewActivity extends AppCompatActivity implements HtmlHandler, B
         return builder.toString();
     }
 
+
     @Override
-    public void handler(BridgeWebView webView, String url, CallBackFunction function) {
-        Log.e(TAG, "handler: " + url);
-        EjuLog.d("shouldOverrideUrlLoading");
-        if (function != null) {
-            function.onCallBack("DefaultHandler response data:" + url);
-        }
-        if (url.startsWith("http://") || url.startsWith("https://")) {
-            webView.loadUrl(url);
-            return;
-        }
-        if (null == router) {
-            router = Router.getInstance();
-        }
-        if (router.isNativeRouteSchema(url)) {
-            try {
-                URI uri = new URI(url);
-                router.internalRoute(this, uri);
-            } catch (URISyntaxException e) {
-                e.printStackTrace();
-                router.broadcastException(new EjuException(EjuException.UNKNOWN_ERROR, e.getMessage()));
-            }
+    protected void onDestroy() {
+        super.onDestroy();
+        if (webView != null) {
+            webView.destroy();
+            webView = null;
         }
     }
 }
