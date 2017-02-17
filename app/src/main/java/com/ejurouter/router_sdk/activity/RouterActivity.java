@@ -104,7 +104,7 @@ public class RouterActivity extends AppCompatActivity {
         findViewById(R.id.btnToLocalH5).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                router.route(context, "local", ViewMapInfo.TYPE_LOCAL_HTML, param);
+                router.route(context, "local1", ViewMapInfo.TYPE_LOCAL_HTML, param);
             }
         });
         findViewById(R.id.btnSetResult).setOnClickListener(new View.OnClickListener() {

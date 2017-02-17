@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">router_sdk</string>
+    <string name="title_activity_target_web_view">TargetWebViewActivity</string>
 </resources>

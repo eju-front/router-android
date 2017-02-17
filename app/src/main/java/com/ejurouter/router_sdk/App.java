@@ -9,6 +9,7 @@ import com.eju.router.sdk.Option;
 import com.eju.router.sdk.Router;
 import com.eju.router.sdk.exception.EjuException;
 import com.ejurouter.router_sdk.activity.DefaultActivity;
+import com.ejurouter.router_sdk.activity.TargetWebViewActivity;
 
 /**
  * Created by Sidney on 2016/11/25.
@@ -37,6 +38,7 @@ public class App extends Application {
             }
         });
 
+        router.setWebViewActivity(TargetWebViewActivity.class);
         router.registerPageNeedNativeParameter(".*172\\.29\\.32\\.215:8080.*");
         router.registerPageNeedNativeParameter("^file.+");
         router.registerPageNeedNativeParameter("^eju.+");

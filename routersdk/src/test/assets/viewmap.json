@@ -16,7 +16,7 @@
       "id": "remote",
       "description": "远程 Html",
       "type": 2,
-      "resource": "http://172.29.32.215:8080/app/index.html"
+      "resource": "http://172.29.32.63:8080/app/index.html"
     },
     {
       "id": "local",
