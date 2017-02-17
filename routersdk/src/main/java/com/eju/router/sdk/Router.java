@@ -591,9 +591,9 @@ public class Router {
     }
 
     /*package*/ RouterUrl getRouterUrlMatchUrl(String url) {
-        if(!url.endsWith(".html")) {
-            return null;
-        }
+//        if(!url.endsWith(".html")) {
+//            return null;
+//        }
 
         RouterUrl routerUrl = null;
         for (RouterUrl rUrl : urlList) {
