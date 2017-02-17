@@ -32,7 +32,7 @@ public class WebViewActivity extends AppCompatActivity implements HtmlHandler, B
     private static final String END_HTML = "</html>";
     private static final String SCRIPT =
             "<script type=\"text/javascript\">" +
-                    "var eju_router_param = " +
+                    "var router_params = " +
                     (BuildConfig.DEBUG ? "'" : "") +
                     "{" +
                     "%s" +
