@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.eju.router.sdk.ProgressWebView
+<com.eju.router.sdk.BridgeWebView
     android:id="@+id/web_view"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -10,4 +10,4 @@
     tools:context="com.ejurouter.router_sdk.activity.TargetWebViewActivity"
     tools:showIn="@layout/activity_target_web_view">
 
-</com.eju.router.sdk.ProgressWebView>
+</com.eju.router.sdk.BridgeWebView>

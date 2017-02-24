@@ -27,6 +27,7 @@
         <input type="button" id="enter2" value="跳转本地HTML" onclick="jumpLocalHTML();"/>
         <input type="button" id="enter3" value="显示或者隐藏Toolbar" onclick="showHideToolBar();"/>
         <input type="button" id="enter4" value="显示Menu" onclick="showHideMenu();"/>
+        <input type="button" id="enter5" value="checkPlatform" onclick="checkPlatform();"/>
 
     </div>
     <div id="footer">
@@ -35,13 +36,30 @@
 </div>
 <script style="text/javascript" src="js/index.js"></script>
 <script>
+    function checkPlatform(){
+
+        if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) {
+            //alert(navigator.userAgent);
+            alert("iOS");
+        } else if (/(Android)/i.test(navigator.userAgent)) {
+            //alert(navigator.userAgent);
+            <!--prompt("android);-->
+            alert("Android");
+            prompt("Please enter your name", "Harry Potter");
+        } else {
+            alert("PC");
+        }
+
+    }
+
     function onMenuTextReady() {
     var value =  Android.onMenuTextReady("onMenuTextReady")
-    Android.onMenuTextClicked(value)
+    window.Android.onMenuTextClicked(value)
+    console.log("type: "+value.getType()+"resource:"+value.resource);
 
 }
     function onMenuTextClicked() {
-    Android.onMenuTextClicked("onMenuTextClicked")
+    window.Android.onMenuTextClicked("onMenuTextClicked")
 }
 
  function testDiv() {
@@ -52,22 +70,28 @@
 
             //send message to native
             var data = "http://www.baidu.com";
-            window.WebViewJavascriptBridge.send(
-                data
-                , function(responseData) {
-                    document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
-                }
-            );
+            <!--window.WebViewBridge.router(-->
+                <!--data-->
+
+            <!--);-->
+            var result = prompt(data);
+            if (result != null) {
+                console.log(result);
+                 alert("return:"+result);
+             }else{
+             console.log("没有返回结果！！！！！！！！！！！！！！！！！！！！！");
+               alert("return:"+没有返回结果);
+             }
 
         }
         function jumpLocal() {
 
             //send message to native
             var data = "eju://host/path?router_id=target&x=1&y=abc&name=樱桃小丸子";
-            window.WebViewJavascriptBridge.send(
+            window.WebViewBridge.router(
                 data
                 , function(responseData) {
-                    document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
+                    document.getElementById("show").innerHTML = "repsonseData from java, data111111111 = " + responseData
                 }
             );
 
@@ -76,7 +100,7 @@
 
             //send message to native
             var data = "eju://host/path?router_id=local_html&z=1&foo=bar";
-            window.WebViewJavascriptBridge.send(
+            window.WebViewBridge.router(
                 data
                 , function(responseData) {
                     document.getElementById("show").innerHTML = "repsonseData from java, data = " + responseData
@@ -86,7 +110,7 @@
 
         function showHideToolBar() {
             //call native method
-            window.WebViewJavascriptBridge.callHandler(
+            window.WebViewBridge.callHandler(
                 'ToolBarJs'
                 , 'toggleToolBar'
                 , function(responseData) {
@@ -96,7 +120,7 @@
         }
         function showHideMenu() {
             //call native method
-            window.WebViewJavascriptBridge.callHandler(
+            window.WebViewBridge.callHandler(
                 'ToolBarJs'
                 , 'toggleMenu'
                 , function(responseData) {
@@ -110,7 +134,7 @@
             <!--var str2 = document.getElementById("text2").value;-->
 
             <!--//call native method-->
-            <!--window.WebViewJavascriptBridge.callHandler(-->
+            <!--window.WebViewBridge.callHandler(-->
                 <!--'submitFromWeb'-->
                 <!--, 'showMenu'-->
                 <!--, function(responseData) {-->
@@ -123,21 +147,21 @@
             <!--document.getElementById("show").innerHTML = logContent;-->
         <!--}-->
 
-        <!--function connectWebViewJavascriptBridge(callback) {-->
-            <!--if (window.WebViewJavascriptBridge) {-->
-                <!--callback(WebViewJavascriptBridge)-->
+        <!--function connectWebViewBridge(callback) {-->
+            <!--if (window.WebViewBridge) {-->
+                <!--callback(WebViewBridge)-->
             <!--} else {-->
                 <!--document.addEventListener(-->
-                    <!--'WebViewJavascriptBridgeReady'-->
+                    <!--'WebViewBridgeReady'-->
                     <!--, function() {-->
-                        <!--callback(WebViewJavascriptBridge)-->
+                        <!--callback(WebViewBridge)-->
                     <!--},-->
                     <!--false-->
                 <!--);-->
             <!--}-->
         <!--}-->
 
-        <!--connectWebViewJavascriptBridge(function(bridge) {-->
+        <!--connectWebViewBridge(function(bridge) {-->
             <!--bridge.init(function(message, responseCallback) {-->
                 <!--console.log('JS got a message', message);-->
                 <!--var data = {-->

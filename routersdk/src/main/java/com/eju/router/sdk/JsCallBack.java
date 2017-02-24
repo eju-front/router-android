@@ -5,7 +5,7 @@ package com.eju.router.sdk;
  * Email lovejjfg@gmail.com
  */
 
-interface JsCallBack {
+public interface JsCallBack {
     String onMenuTextReady(String text);
 
     void onMenuTextClicked(String url);

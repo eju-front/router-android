@@ -1,30 +1,52 @@
 package com.ejurouter.router_sdk.activity;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
+import android.webkit.JavascriptInterface;
 
 import com.eju.router.sdk.BridgeHandler;
 import com.eju.router.sdk.BridgeWebView;
 import com.eju.router.sdk.CallBackFunction;
-import com.eju.router.sdk.ProgressWebView;
-import com.eju.router.sdk.WebViewActivity;
+import com.eju.router.sdk.JsCallBack;
+import com.eju.router.sdk.ViewMapInfo;
 import com.ejurouter.router_sdk.R;
 
 
-public class TargetWebViewActivity extends WebViewActivity {
+public class TargetWebViewActivity extends AppCompatActivity {
 
-    private ProgressWebView webView;
+    private BridgeWebView webView;
     private Toolbar toolbar;
 
     @Override
-    protected void initView(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_target_web_view);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
-        webView = (ProgressWebView) findViewById(R.id.web_view);
+        webView = (BridgeWebView) findViewById(R.id.web_view);
+        webView.handleIntent(getIntent());
 
+        webView.addJavascriptInterface(new JsCallBack() {
+            @Override
+            @JavascriptInterface
+            public String onMenuTextReady(String text) {//参数传给本地 返回值返回给调用者
+                Log.e("TAG", "onMenuTextReady: " + text);
+                return "This is the return value: " + text;
+            }
+
+            @Override
+            @JavascriptInterface
+            public void onMenuTextClicked(String url) {
+                Log.e("TAG", "onMenuTextClicked: " + url);
+            }
+        }, "Android");
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,16 +78,27 @@ public class TargetWebViewActivity extends WebViewActivity {
                 }
             }
         });
+
     }
 
     @Override
-    protected int getLayoutId() {
-        return R.layout.activity_target_web_view;
+    protected void onNewIntent(Intent intent) {
+        setIntent(intent);
+        webView.handleIntent(intent);
     }
 
     @Override
-    public ProgressWebView getWebView() {
-        return webView;
+    protected void onDestroy() {
+        webView.handleDestroy();
+        super.onDestroy();
     }
+
+    @Override
+    public void onBackPressed() {
+        if (!webView.onBackPressed()) {
+            super.onBackPressed();
+        }
+    }
+
 
 }

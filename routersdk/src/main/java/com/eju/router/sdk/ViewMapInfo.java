@@ -1,5 +1,7 @@
 package com.eju.router.sdk;
 
+import android.webkit.JavascriptInterface;
+
 /**
  * view map info
  * related with viewmap.xml
@@ -62,7 +64,7 @@ public class ViewMapInfo {
     public void setResource(String resource) {
         this.resource = resource;
     }
-
+    @JavascriptInterface
     public int getType() {
         return type;
     }

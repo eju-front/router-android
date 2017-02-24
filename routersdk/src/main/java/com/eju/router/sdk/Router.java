@@ -1,5 +1,6 @@
 package com.eju.router.sdk;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -16,6 +17,8 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static com.eju.router.sdk.WebViewEngineImpl.EXTRA_URL;
 
 
 /**
@@ -522,7 +525,7 @@ public class Router {
         }
         intent.setClass(context, webViewActivity);
 //        intent.putExtra(WebViewActivity.EXTRA_URL, url);
-        intent.putExtra(WebViewActivity.EXTRA_URL, resource);
+        intent.putExtra(EXTRA_URL, resource);
         if(null != bundle) {
             intent.putExtras(bundle);
         }
@@ -628,7 +631,7 @@ public class Router {
         }
     }
 
-    public void setWebViewActivity(@NonNull Class<? extends WebViewActivity> clazz) {
+    public void setWebViewActivity(@NonNull Class<? extends Activity> clazz) {
         webViewActivity = clazz;
     }
 }

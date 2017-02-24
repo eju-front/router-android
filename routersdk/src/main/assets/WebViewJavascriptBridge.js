@@ -2,7 +2,7 @@
 //since comments will cause error when use in webview.loadurl,
 //comments will be remove by java use regexp
 (function() {
-    if (window.WebViewJavascriptBridge) {
+    if (window.WebViewBridge) {
         return;
     }
 
@@ -25,10 +25,10 @@
 
     //set default messageHandler
     function init(messageHandler) {
-        if (WebViewJavascriptBridge._messageHandler) {
-            throw new Error('WebViewJavascriptBridge.init called twice');
+        if (WebViewBridge._messageHandler) {
+            throw new Error('WebViewBridge.init called twice');
         }
-        WebViewJavascriptBridge._messageHandler = messageHandler;
+        WebViewBridge._messageHandler = messageHandler;
         var receivedMessages = receiveMessageQueue;
         receiveMessageQueue = null;
         for (var i = 0; i < receivedMessages.length; i++) {
@@ -36,11 +36,16 @@
         }
     }
 
-    function send(data, responseCallback) {
+    function router(data, responseCallback) {
         _doSend({
             data: data
         }, responseCallback);
     }
+//    function send(data, responseCallback) {
+//        _doSend({
+//            data: data
+//        }, responseCallback);
+//    }
 
     function registerHandler(handlerName, handler) {
         messageHandlers[handlerName] = handler;
@@ -98,7 +103,7 @@
                     };
                 }
 
-                var handler = WebViewJavascriptBridge._messageHandler;
+                var handler = WebViewBridge._messageHandler;
                 if (message.handlerName) {
                     handler = messageHandlers[message.handlerName];
                 }
@@ -107,7 +112,7 @@
                     handler(message.data, responseCallback);
                 } catch (exception) {
                     if (typeof console != 'undefined') {
-                        console.log("WebViewJavascriptBridge: WARNING: javascript handler threw.", "msg:"+message, "exception:"+exception);
+                        console.log("WebViewBridge: WARNING: javascript handler threw.", "msg:"+message, "exception:"+exception);
                     }
                 }
             }
@@ -124,9 +129,9 @@
         }
     }
 
-    var WebViewJavascriptBridge = window.WebViewJavascriptBridge = {
+    var WebViewBridge = window.WebViewBridge = {
         init: init,
-        send: send,
+        router: router,
         registerHandler: registerHandler,
         callHandler: callHandler,
         _fetchQueue: _fetchQueue,
@@ -136,7 +141,7 @@
     var doc = document;
     _createQueueReadyIframe(doc);
     var readyEvent = doc.createEvent('Events');
-    readyEvent.initEvent('WebViewJavascriptBridgeReady');
-    readyEvent.bridge = WebViewJavascriptBridge;
+    readyEvent.initEvent('WebViewBridgeReady');
+    readyEvent.bridge = WebViewBridge;
     doc.dispatchEvent(readyEvent);
 })();

@@ -17,12 +17,12 @@ public class BridgeUtil {
 	final static String SPLIT_MARK = "/";
 	
 	final static String CALLBACK_ID_FORMAT = "JAVA_CB_%s";
-	final static String JS_HANDLE_MESSAGE_FROM_JAVA = "javascript:WebViewJavascriptBridge._handleMessageFromNative('%s');";
-	final static String JS_FETCH_QUEUE_FROM_JAVA = "javascript:WebViewJavascriptBridge._fetchQueue();";
+	final static String JS_HANDLE_MESSAGE_FROM_JAVA = "javascript:WebViewBridge._handleMessageFromNative('%s');";
+	final static String JS_FETCH_QUEUE_FROM_JAVA = "javascript:WebViewBridge._fetchQueue();";
 	public final static String JAVASCRIPT_STR = "javascript:";
 	
 	public static String parseFunctionName(String jsUrl){
-		return jsUrl.replace("javascript:WebViewJavascriptBridge.", "").replaceAll("\\(.*\\);", "");
+		return jsUrl.replace("javascript:WebViewBridge.", "").replaceAll("\\(.*\\);", "");
 	}
 	
 	
