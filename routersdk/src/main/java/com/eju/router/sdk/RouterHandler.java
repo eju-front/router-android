@@ -56,7 +56,7 @@ import com.eju.router.sdk.exception.EjuException;
             Activity activity = (Activity) context;
             activity.startActivityForResult(intent, requestCode);
         } else {
-            throw new EjuException(EjuException.ILLEGAL_PARAMETER, "context should be an instance of Activity");
+            throw new EjuException(EjuException.ILLEGAL_PARAMETER, "mContext should be an instance of Activity");
         }
     }
 

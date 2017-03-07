@@ -71,6 +71,7 @@ public class RouterTest extends BaseTest {
 
     @Test
     public void testRegisterExceptionHandler() {
+        router.set404ViewMap("com.a.a.a");
         final AtomicInteger count = new AtomicInteger(0);
         ExceptionHandler handler1 = new ExceptionHandler() {
             @Override
@@ -158,13 +159,13 @@ public class RouterTest extends BaseTest {
 
     @Test
     public void testFindFragmentById() {
-        Fragment fragment = router.findFragmentById(application, "fragment", null);
+        Fragment fragment = router.findFragmentById("fragment");
         assertThat(fragment).isNotNull().isInstanceOf(TargetFragment.class);
     }
 
     @Test
     public void testFindNotExistFragmentThenReturnNull() {
-        Fragment fragment = router.findFragmentById(application, "foobar", null);
+        Fragment fragment = router.findFragmentById("foobar");
         assertThat(fragment).isNull();
     }
 }

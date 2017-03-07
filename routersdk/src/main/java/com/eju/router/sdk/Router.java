@@ -1,5 +1,6 @@
 package com.eju.router.sdk;
 
+import android.app.Activity;
 import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
@@ -14,6 +15,8 @@ import com.eju.router.sdk.exception.EjuParamException;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -22,8 +25,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * The {@code Router} is used to manage the application router.
  *
  * @author SidneyXu
+ * @author tangqianwei(edit)
  */
 public class Router {
+
+    public static final String EXTRA_URL = "_url";
+
     private static final String TAG = Router.class.getSimpleName();
 
     private static Router sInstance;
@@ -34,20 +41,25 @@ public class Router {
     private ViewMapInfo info404;
     private RouterHandler routerHandler;
     private ArrayList<String> nativeSchema;
-    private ArrayList<RouterUrl> urlList;
+    private Map<String, List<RouterUrl>> urlList;
     private boolean initialized;
     private EjuRequest updateRequest;
-    private Class webViewActivity;
+
+//    private Map<Class<?>, WeakReference<IRouterWebContainer>> mWebContainerMap;
+
 
     /**
      * Constructs a new {@code Router}.
      */
     public Router() {
         routerHandler = new RouterHandler();
+
         nativeSchema = new ArrayList<>();
         nativeSchema.add("eju");
+        nativeSchema.add("ejurouter");
 
-        urlList = new ArrayList<>();
+        urlList = new HashMap<>();
+//        mWebContainerMap = new HashMap<>();
     }
 
     /**
@@ -61,23 +73,23 @@ public class Router {
     }
 
     /**
-     * Initialize this object with a given context.
+     * Initialize this object with a given mContext.
      *
-     * @param context the android context
+     * @param context the android mContext
      */
     public void initialize(Context context) {
         initialize(context, null);
     }
 
     /**
-     * Initialize this object with a given context and option.
+     * Initialize this object with a given mContext and option.
      *
-     * @param context the android context
+     * @param context the android mContext
      * @param option  the specified option
      */
     public void initialize(Context context, Option option) {
         if (null == context) {
-            throw new NullPointerException("context is required!");
+            throw new NullPointerException("mContext is required!");
         }
         if (initialized) {
             return;
@@ -122,60 +134,20 @@ public class Router {
      * @param   pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
      * @param   handler handler.
      */
-    public void addHtmlHandlerWithUrl(String pattern, HtmlHandler handler) {
-        RouterUrl routerUrl = getUrlFromListById(pattern);
-        if(null == routerUrl) {
-            routerUrl = new RouterUrl(pattern);
-            urlList.add(routerUrl);
+    public void registerUrl(String pattern, @NonNull RouterUrl handler) {
+        Class<?> clz = handler.getTarget();
+        if(null != clz && !IRouterWebContainer.class.isAssignableFrom(clz)) {
+            throw new IllegalArgumentException(clz.getName() +
+                    "must implements IRouterWebContainer!");
         }
-        routerUrl.setHandler(handler);
-        routerUrl.setShouldBeIntercept(true);
-    }
 
-    /**
-     * remove a handler of specific url
-     *
-     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
-     */
-    public void removeHtmlHandlerWithUrl(String pattern) {
-        RouterUrl routerUrl = getUrlFromListById(pattern);
-        if(null != routerUrl) {
-            urlList.remove(routerUrl);
-        }
-    }
-
-    /**
-     * register a page that need parameter in native
-     *
-     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
-     */
-    public void registerPageNeedNativeParameter(String pattern) {
-        RouterUrl routerUrl = getUrlFromListById(pattern);
-        if(null == routerUrl) {
-            routerUrl = new RouterUrl(pattern);
-            urlList.add(routerUrl);
-        }
-        routerUrl.setNeedParameter(true);
-        routerUrl.setShouldBeIntercept(true);
-
-    }
-
-    /**
-     * unregister page in current list
-     *
-     * @param pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
-     */
-    public void unregisterPageNeedNativeParameter(String pattern) {
-        RouterUrl routerUrl = getUrlFromListById(pattern);
-        if(null == routerUrl) {
-            routerUrl = new RouterUrl(pattern);
-            urlList.add(routerUrl);
-        }
-        routerUrl.setNeedParameter(false);
-        if(null == routerUrl.getHandler()) {
-            routerUrl.setShouldBeIntercept(false);
+        handler.setUrlPattern(pattern);
+        if(urlList.containsKey(pattern)) {
+            urlList.get(pattern).add(handler);
         } else {
-            routerUrl.setShouldBeIntercept(true);
+            List<RouterUrl> list = new ArrayList<>();
+            list.add(handler);
+            urlList.put(pattern, list);
         }
     }
 
@@ -207,7 +179,7 @@ public class Router {
     /**
      * Route to the specified resource by id.
      *
-     * @param context     the android context
+     * @param context     the android mContext
      * @param id          the specified id
      * @param type        the specified type, see {@link ViewMapInfo}
      * @param paramMap    the passed parameters as Map
@@ -215,7 +187,7 @@ public class Router {
      */
     public void route(Context context, String id, int type, Map<String, Object> paramMap, Integer requestCode) {
         try {
-            ViewMapInfo info = checkResource(context, id, type, paramMap);
+            ViewMapInfo info = checkResource(id, type);
             if (null != info) {
                 goToResource(context, null, info, paramMap, requestCode);
             }
@@ -227,7 +199,7 @@ public class Router {
     /**
      * Route to the specified resource by id.
      *
-     * @param context the android context
+     * @param context the android mContext
      * @param id      the specified id
      * @param type    the specified type, see {@link ViewMapInfo}
      */
@@ -238,7 +210,7 @@ public class Router {
     /**
      * Route to the specified resource by id.
      *
-     * @param context  the android context
+     * @param context  the android mContext
      * @param id       the specified id
      * @param type     the specified type, see {@link ViewMapInfo}
      * @param paramMap the passed parameters as Map
@@ -304,11 +276,24 @@ public class Router {
         Bundle bundle;
         try {
             String id = null;
-            String query = uri.getQuery();
+//            String query = uri.getQuery();
+            String query = uri.getRawQuery();
             if (!TextUtils.isEmpty(query)) {
                 paramAdapter = new ParamAdapter();
-                paramAdapter.setParam(
-                        bundle = paramAdapter.fromUrl(query));
+
+                // get old data
+                bundle = paramAdapter.fromUrl(query);
+                Bundle oldData = null;
+                Intent oldIntent = ((Activity)context).getIntent();
+                if(null != oldIntent) {
+                    oldData = oldIntent.getExtras();
+                }
+                if(null != oldData) {
+                    oldData.remove(EXTRA_URL);
+                    bundle.putAll(oldData);
+                }
+
+                paramAdapter.setParam(bundle);
                 id = bundle.getString("router_id");
             }
 
@@ -316,7 +301,7 @@ public class Router {
                 throw new EjuException("no id in native scheme 'eju://'");
             }
 
-            ViewMapInfo info = checkResource(context, id, ViewMapInfo.TYPE_UNSPECIFIED, null);
+            ViewMapInfo info = checkResource(id, ViewMapInfo.TYPE_UNSPECIFIED);
             if (null != info) {
                 String resource = info.getResource();
                 if (info.getType() == ViewMapInfo.TYPE_NATIVE) {
@@ -335,7 +320,7 @@ public class Router {
 
     private void internalRoute(FragmentAdapter fragmentAdapter, String id, int type, Map<String, Object> paramMap, Integer requestCode) {
         try {
-            ViewMapInfo info = checkResource(fragmentAdapter.getActivity(), id, type, paramMap);
+            ViewMapInfo info = checkResource(id, type);
             if (null != info) {
                 goToResource(fragmentAdapter.getActivity(), fragmentAdapter, info, paramMap, requestCode);
             }
@@ -347,14 +332,12 @@ public class Router {
     /**
      * Find the fragment by id.
      *
-     * @param context  the android context
      * @param id       the specified id
-     * @param paramMap the passed parameters as Map
      * @return the found fragment or null
      */
-    public Fragment findFragmentById(Context context, String id, Map<String, Object> paramMap) {
+    public Fragment findFragmentById(String id) {
         try {
-            return internalFindFragmentById(context, id, paramMap);
+            return internalFindFragmentById(id);
         } catch (EjuException e) {
             return null;
         }
@@ -363,21 +346,19 @@ public class Router {
     /**
      * Find the support.v4 fragment by id.
      *
-     * @param context  the android context
      * @param id       the specified id
-     * @param paramMap the passed parameters as Map
      * @return the found support.v4 fragment or null
      */
-    public android.support.v4.app.Fragment findSupportFragmentById(Context context, String id, Map<String, Object> paramMap) {
+    public android.support.v4.app.Fragment findSupportFragmentById(String id) {
         try {
-            return internalFindSupportFragmentById(context, id, paramMap);
+            return internalFindSupportFragmentById(id);
         } catch (EjuException e) {
             return null;
         }
     }
 
-    private Fragment internalFindFragmentById(Context context, String id, Map<String, Object> paramMap) throws EjuException {
-        ViewMapInfo info = checkResource(context, id, ViewMapInfo.TYPE_NATIVE, paramMap);
+    private Fragment internalFindFragmentById(String id) throws EjuException {
+        ViewMapInfo info = checkResource(id, ViewMapInfo.TYPE_NATIVE);
         if (null == info) {
             throw new EjuException(EjuException.RESOURCE_NOT_FOUND, "Resource not found.");
         }
@@ -393,8 +374,8 @@ public class Router {
         }
     }
 
-    private android.support.v4.app.Fragment internalFindSupportFragmentById(Context context, String id, Map<String, Object> paramMap) throws EjuException {
-        ViewMapInfo info = checkResource(context, id, ViewMapInfo.TYPE_NATIVE, paramMap);
+    private android.support.v4.app.Fragment internalFindSupportFragmentById(String id) throws EjuException {
+        ViewMapInfo info = checkResource(id, ViewMapInfo.TYPE_NATIVE);
         if (null == info) {
             throw new EjuException(EjuException.RESOURCE_NOT_FOUND, "Resource not found.");
         }
@@ -449,14 +430,15 @@ public class Router {
         });
     }
 
-    private ViewMapInfo checkResource(Context context, String id, int type, Map<String, Object> paramMap) throws EjuException {
-        checkNull(context, "context");
-        checkNull(context, "id");
+    private ViewMapInfo checkResource(String id, int type) throws EjuException {
+//        checkNull(context, "mContext");
+//        checkNull(context, "id");
 
         ViewMapInfo info = mapManager.getViewMapInfo(id);
         if (null == info) {
-            goTo404(context, paramMap);
-            return null;
+//            goTo404(context, paramMap);
+//            return null;
+            return info404;
         }
         int typeFromViewMap = info.getType();
         String resource = info.getResource();
@@ -471,8 +453,13 @@ public class Router {
             retType = typeFromViewMap;
         }
         if (!valid) {
-            goTo404(context, paramMap);
-            return null;
+//            goTo404(context, paramMap);
+//            return null;
+            return info404;
+        }
+
+        if (resource.startsWith("file://")) {
+            resource = getFirstNativeSchema() + resource.substring(resource.indexOf(":"));
         }
         return new ViewMapInfo(id, retType, resource, null);
     }
@@ -483,7 +470,7 @@ public class Router {
                               Map<String, Object> paramMap,
                               Integer requestCode) throws EjuException {
         ParamAdapter paramAdapter = null;
-        if (null != paramMap && paramMap.size() > 0) {
+        if (null != paramMap && paramMap.size() > 0 && info404 != info) {
             paramAdapter = new ParamAdapter();
             paramAdapter.setParam(paramMap);
         }
@@ -516,16 +503,21 @@ public class Router {
         } catch (EjuParamException e) {
             e.printStackTrace();
         }
+
         Intent intent = new Intent();
-        if (webViewActivity == null) {
-            throw new RuntimeException("请设置对应的WebViewActivity");
+
+        RouterUrl url = getRouterUrlMatchUrl(resource);
+        Class<?> target = null == url ? null : url.getTarget();
+        if (target == null) {
+            target = WebViewActivity.class;
         }
-        intent.setClass(context, webViewActivity);
+        intent.setClass(context, target);
 //        intent.putExtra(WebViewActivity.EXTRA_URL, url);
-        intent.putExtra(WebViewActivity.EXTRA_URL, resource);
+        intent.putExtra(EXTRA_URL, resource);
         if(null != bundle) {
             intent.putExtras(bundle);
         }
+        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
         context.startActivity(intent);
     }
 
@@ -551,7 +543,7 @@ public class Router {
         return true;
     }
 
-    private void goTo404(Context context, Map<String, Object> paramMap) throws EjuException {
+    private void goTo404(Context context) throws EjuException {
         if (info404 != null) {
             goToNative(context, null, info404.getResource(), null, null);
             return;
@@ -595,40 +587,42 @@ public class Router {
         return false;
     }
 
-    /*package*/ RouterUrl getRouterUrlMatchUrl(String url) {
-//        if(!url.endsWith(".html")) {
-//            return null;
-//        }
-
-        RouterUrl routerUrl = null;
-        for (RouterUrl rUrl : urlList) {
-            if(rUrl.isMatch(url)) {
-                rUrl.setCurrentUrl(url);
-                routerUrl = rUrl;
-                break;
-            }
+    /*package*/ String getFirstNativeSchema() {
+        if(null != nativeSchema && nativeSchema.size() > 0) {
+            return nativeSchema.get(0);
         }
-        return routerUrl;
+        return "eju";
     }
 
-    private RouterUrl getUrlFromListById(String pattern) {
-        RouterUrl routerUrl = null;
-        for (RouterUrl url : urlList) {
-            if(pattern.equalsIgnoreCase(url.getId())) {
-                routerUrl = url;
+    /*package*/ RouterUrl getRouterUrlMatchUrl(String url) {
+        int index = url.lastIndexOf('?');
+        if(-1 != index) {
+            url = url.substring(0, index);
+        }
+
+        if(url.endsWith(".js") || url.endsWith(".css")) {
+            return null;
+        }
+
+        RouterUrl rUrl = null;
+        for (List<RouterUrl> list : urlList.values()) {
+            RouterUrl u = list.get(0);
+            if(u.isMatch(url)) {
+                u.setCurrentUrl(url);
+                rUrl = u;
                 break;
             }
         }
-        return routerUrl;
+        return rUrl;
+    }
+
+    private List<RouterUrl> getUrlFromListById(String pattern) {
+        return urlList.get(pattern);
     }
 
     private void checkNull(Object object, String name) {
         if (null == object) {
             throw new RuntimeException(name + " is necessary.");
         }
-    }
-
-    public void setWebViewActivity(@NonNull Class<? extends WebViewActivity> clazz) {
-        webViewActivity = clazz;
     }
 }

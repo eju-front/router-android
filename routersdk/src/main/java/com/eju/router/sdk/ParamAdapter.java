@@ -377,7 +377,7 @@ import java.util.Set;
 
                         key = url.substring(start, end);
                         count = 0;
-                        continue;
+                        break;
                     }
                     case '&': {
                         if (null == key) {
@@ -414,7 +414,7 @@ import java.util.Set;
                         }
 
                         count = 0;
-                        continue;
+                        break;
                     }
                     default:
                         ++count;

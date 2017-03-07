@@ -11,7 +11,7 @@ import android.preference.PreferenceManager;
 
     /**
      * put int value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param value the value of the key
      */
@@ -23,7 +23,7 @@ import android.preference.PreferenceManager;
     }
     /**
      * get int value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param defaultValue the defaultValue of the key
      */
@@ -33,7 +33,7 @@ import android.preference.PreferenceManager;
     }
     /**
      * put String value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param value the value of the key
      */
@@ -45,7 +45,7 @@ import android.preference.PreferenceManager;
     }
     /**
      * get String value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param defaultValue the defaultValue of the key
      */
@@ -56,7 +56,7 @@ import android.preference.PreferenceManager;
 
     /**
      * put boolean value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param value the value of the key
      */
@@ -68,7 +68,7 @@ import android.preference.PreferenceManager;
     }
     /**
      * get boolean value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param defaultValue the defaultValue of the key
      */
@@ -78,7 +78,7 @@ import android.preference.PreferenceManager;
     }
     /**
      * put float value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param value the value of the key
      */
@@ -90,7 +90,7 @@ import android.preference.PreferenceManager;
     }
     /**
      * get float value with the key
-     * @param context the context
+     * @param context the mContext
      * @param key the key to save
      * @param defaultValue the defaultValue of the key
      */
@@ -101,7 +101,7 @@ import android.preference.PreferenceManager;
 
     /**
      * clear all data
-     * @param context the context
+     * @param context the mContext
      */
     public static void clear(Context context) {
         PreferenceManager.getDefaultSharedPreferences(context)
@@ -112,7 +112,7 @@ import android.preference.PreferenceManager;
 
     /**
      * remove the specified value
-     * @param context the context
+     * @param context the mContext
      * @param key the key
      */
     public static void remove(Context context, String key) {
