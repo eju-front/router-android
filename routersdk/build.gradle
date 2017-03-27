@@ -1,4 +1,12 @@
 apply plugin: 'com.android.library'
+apply plugin: 'maven'
+
+def repositoryPropertiesFile = rootProject.file('repository.properties')
+def repositoryProperties = new Properties()
+repositoryProperties.load(new FileInputStream(repositoryPropertiesFile))
+
+def _VersionCode = 2
+def _VersionName = '0.0.2'
 
 android {
     compileSdkVersion 24
@@ -7,8 +15,8 @@ android {
     defaultConfig {
         minSdkVersion 14
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode _VersionCode as int
+        versionName _VersionName
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
     }
@@ -24,7 +32,29 @@ android {
         abortOnError false;
     }
 
-    defaultPublishConfig "debug"
+    defaultPublishConfig "release"
+}
+
+configurations {
+    deployerJars
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            configuration = configurations.deployerJars
+            repository(url: repositoryProperties['MAVEN_URL']) {
+                authentication (
+                    userName: repositoryProperties['MAVEN_USERNAME'],
+                    password: repositoryProperties['MAVEN_PASSWORD']
+                )
+            }
+
+            pom.version = _VersionName
+            pom.groupId = 'com.eju.cy'
+            pom.artifactId = 'router'
+        }
+    }
 }
 
 task releaseJar(type: Jar) {
@@ -45,7 +75,7 @@ dependencies {
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
-    compile 'com.android.support:appcompat-v7:24.2.0'
+    provided 'com.android.support:appcompat-v7:24.2.0'
     testCompile 'junit:junit:4.12'
 
     // http
@@ -66,4 +96,7 @@ dependencies {
     testCompile "org.powermock:powermock-module-junit4-rule:1.6.5"
     testCompile 'org.powermock:powermock-api-mockito:1.6.5'
     testCompile "org.powermock:powermock-classloading-xstream:1.6.5"
+
+    // maven deployer
+    deployerJars 'org.apache.maven.wagon:wagon-ssh:2.2'
 }
