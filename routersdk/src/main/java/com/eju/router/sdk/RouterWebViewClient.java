@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.webkit.MimeTypeMap;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -12,14 +14,13 @@ import android.webkit.WebViewClient;
 import com.eju.router.sdk.exception.EjuException;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Map;
 
 
 /**
@@ -44,14 +45,14 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
     private Context mContext;
 
     private final Router router;
-    private final Interceptor mRemoteInterceptor;
-    private final Interceptor mLocalInterceptor;
+    private final AbstractInterceptor mRemoteInterceptor;
+    private final AbstractInterceptor mLocalInterceptor;
 
-    public RouterWebViewClient(WebView webView) {
+    public RouterWebViewClient(WebView webView, HttpClient client) {
         mContext = webView.getContext();
         router = Router.getInstance();
-        mRemoteInterceptor = new RemoteInterceptor(new RemoteHtmlLoader());
-        mLocalInterceptor = new LocalInterceptor(new NativeHtmlLoader());
+        mRemoteInterceptor = new AbstractInterceptor(new RemoteHtmlLoader(client)) {};
+        mLocalInterceptor = new AbstractInterceptor(new NativeHtmlLoader()) {};
         mRemoteInterceptor.setParamHandler(this);
         mLocalInterceptor.setParamHandler(this);
     }
@@ -90,14 +91,13 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
 
         url = onBeforeInterceptRequest(view, url);
 
-        final Interceptor interceptor;
+        final WebResourceResponse wrr;
         if(router.isNativeRouteSchema(url)) {
-            interceptor = mLocalInterceptor;
+            wrr = mLocalInterceptor.intercept(url);
         } else {
-            interceptor = mRemoteInterceptor;
+            wrr = mRemoteInterceptor.intercept(url);
         }
 
-        WebResourceResponse wrr = interceptor.intercept(url);
         onAfterInterceptRequest(view, url, wrr);
         return wrr;
     }
@@ -136,10 +136,11 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
         if(null != bundle) {
             StringBuilder builder = new StringBuilder();
             for (String key : bundle.keySet()) {
+                // no '_url' parameter more.
                 // ignore '_url' parameter
-                if (key.equalsIgnoreCase(Router.EXTRA_URL)) {
-                    continue;
-                }
+//                if (Router.EXTRA_URL.equalsIgnoreCase(key)) {
+//                    continue;
+//                }
                 builder.append(key).append(':').append(parseObjectOfJS(bundle.get(key)))
                         .append(',');
             }
@@ -205,89 +206,17 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
         return builder.toString();
     }
 
+    private class RemoteHtmlLoader implements HtmlLoader {
 
-    private class RemoteInterceptor extends Interceptor {
+        private HttpClient mClient;
 
-        RemoteInterceptor(HtmlLoader loader) {
-            super(loader);
+        RemoteHtmlLoader(HttpClient client) {
+            mClient = client;
         }
 
         @Override
-        WebResourceResponse intercept(String url) {
-            if(url.startsWith("blob:")) {
-                return null;
-            }
-
-            RouterUrl routerUrl = router.getRouterUrlMatchUrl(url);
-            if(null == routerUrl) {
-                return null;
-            }
-
-            byte[] data;
-            try {
-                data = load0(url);
-            } catch (EjuException e) {
-                return null;
-            }
-
-            try {
-                // parameter
-                if (routerUrl.isNeedParameter()) {
-                    data = insert0(routerUrl.getCurrentUrl(), data);
-                }
-                // user's handler
-                HtmlHandler handler = routerUrl.getHandler();
-                if (null != handler) {
-                    data = handler.handle(routerUrl.getCurrentUrl(), data);
-                }
-            } catch (EjuException e) {
-                return null;
-            }
-
-            return new WebResourceResponse(
-                    "text/html", "utf-8", new ByteArrayInputStream(data));
-        }
-    }
-
-    private class LocalInterceptor extends Interceptor {
-
-        LocalInterceptor(HtmlLoader loader) {
-            super(loader);
-        }
-
-        @Override
-        WebResourceResponse intercept(String url) {
-            byte[] data;
-            try {
-                data = load0("file://".concat(
-                        url.substring((router.getFirstNativeSchema() + "://").length())));
-            } catch (EjuException e) {
-//                return new WebResourceResponse("text/html", "utf-8", null);
-                return null;
-            }
-
-            RouterUrl routerUrl = router.getRouterUrlMatchUrl(url);
-            if(null == routerUrl) {
-                return null;
-            }
-
-            try {
-                // parameter
-                if (routerUrl.isNeedParameter()) {
-                    data = insert0(routerUrl.getCurrentUrl(), data);
-                }
-                // user's handler
-                HtmlHandler handler = routerUrl.getHandler();
-                if (null != handler) {
-                    data = handler.handle(routerUrl.getCurrentUrl(), data);
-                }
-            } catch (EjuException e) {
-                if (BuildConfig.DEBUG) EjuLog.e(e.getMessage());
-            }
-
-
-            return new WebResourceResponse(
-                    "text/html", "utf-8", new ByteArrayInputStream(data));
+        @Nullable public HttpClient.Response load(String url) throws IOException {
+            return mClient.execute(url);
         }
     }
 
@@ -296,62 +225,47 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
         private final String ASSETS_BASE = "file:///android_asset/";
 
         @Override
-        public byte[] load(String url) throws IOException {
-            ByteArrayOutputStream os = null;
-            InputStream is = null;
-            try {
-                os = new ByteArrayOutputStream();
-                is = getInputStreamByUrl(url);
-
-                byte[] buff = new byte[512];
-                int count;
-                while (-1 != (count = is.read(buff))) {
-                    os.write(buff, 0, count);
-                }
-
-                return os.toByteArray();
-
-            } finally {
-                close(os);
-                close(is);
-            }
-        }
-
-        private InputStream getInputStreamByUrl(String url) throws IOException {
-            Resources resources = mContext.getResources();
-            if(url.startsWith(ASSETS_BASE)) {
-                return resources.getAssets().open(url.substring(ASSETS_BASE.length()));
-            } else {
+        public HttpClient.Response load(final String url) throws IOException {
+            if(!url.startsWith(ASSETS_BASE)) {
                 throw new IOException("invalid url");
             }
-        }
 
-        private void close(Closeable closeable) {
-            if(null != closeable) { try {
-                closeable.close();
-            } catch (IOException e) {
-                EjuLog.e(e.getMessage());
-            } }
-        }
-    }
+            return new HttpClient.Response() {
+                @Override
+                public InputStream getBody() {
+                    Resources resources = mContext.getResources();
+                    try {
+                        return resources.getAssets().open(url.substring(ASSETS_BASE.length()));
+                    } catch (IOException e) {
+                        return new ByteArrayInputStream(new byte[0]);
+                    }
+                }
 
-    private class RemoteHtmlLoader implements HtmlLoader {
+                @Override
+                public String getMimeType() {
+                    return MimeTypeMap.getFileExtensionFromUrl(url);
+                }
 
-        private EjuHttpClient mHttpClient = EjuHttpClient.newClient(5000);
+                @Override
+                public String getEncoding() {
+                    return "utf-8";
+                }
 
-        @Override
-        public byte[] load(String url) throws IOException {
-            EjuResponse response;
-            try {
-                response = mHttpClient.execute(new EjuRequest.Builder()
-                        .url(url)
-                        .method(EjuRequest.METHOD_GET)
-                        .build());
-            } catch (EjuException e) {
-                throw new IOException(e);
-            }
+                @Override
+                public Map<String, String> getHeaders() {
+                    return null;
+                }
 
-            return 200 == response.getStatusCode() ? response.getBody() : null;
+                @Override
+                public int getStatusCode() {
+                    return 200;
+                }
+
+                @Override
+                public String getReasonPhrase() {
+                    return "OK";
+                }
+            };
         }
     }
 }

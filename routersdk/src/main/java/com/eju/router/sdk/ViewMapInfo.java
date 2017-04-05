@@ -70,4 +70,16 @@ public class ViewMapInfo {
     public void setType(int type) {
         this.type = type;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(null == obj || !ViewMapInfo.class.isAssignableFrom(obj.getClass())) {
+            return false;
+        }
+
+        ViewMapInfo info = (ViewMapInfo)obj;
+        return (this.id.equalsIgnoreCase(info.id)
+                && this.type == info.type
+                && this.resource.equalsIgnoreCase(info.resource)) || super.equals(info);
+    }
 }

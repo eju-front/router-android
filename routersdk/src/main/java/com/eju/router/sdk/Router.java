@@ -2,10 +2,11 @@ package com.eju.router.sdk;
 
 import android.app.Activity;
 import android.app.Fragment;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
 
@@ -15,8 +16,6 @@ import com.eju.router.sdk.exception.EjuParamException;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -29,8 +28,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Router {
 
-    public static final String EXTRA_URL = "_url";
-
     private static final String TAG = Router.class.getSimpleName();
 
     private static Router sInstance;
@@ -41,7 +38,6 @@ public class Router {
     private ViewMapInfo info404;
     private RouterHandler routerHandler;
     private ArrayList<String> nativeSchema;
-    private Map<String, List<RouterUrl>> urlList;
     private boolean initialized;
     private EjuRequest updateRequest;
 
@@ -51,15 +47,12 @@ public class Router {
     /**
      * Constructs a new {@code Router}.
      */
-    public Router() {
+    /*package*/ Router() {
         routerHandler = new RouterHandler();
 
         nativeSchema = new ArrayList<>();
         nativeSchema.add("eju");
         nativeSchema.add("ejurouter");
-
-        urlList = new HashMap<>();
-//        mWebContainerMap = new HashMap<>();
     }
 
     /**
@@ -125,29 +118,6 @@ public class Router {
             info404 = null;
         } else {
             info404 = new ViewMapInfo(null, ViewMapInfo.TYPE_NATIVE, resource, null);
-        }
-    }
-
-    /**
-     * add a handler to specific url when processing it
-     *
-     * @param   pattern regex url pattern, e.g. ".+\.baidu\.com", "cy\.eju\..+"
-     * @param   handler handler.
-     */
-    public void registerUrl(String pattern, @NonNull RouterUrl handler) {
-        Class<?> clz = handler.getTarget();
-        if(null != clz && !IRouterWebContainer.class.isAssignableFrom(clz)) {
-            throw new IllegalArgumentException(clz.getName() +
-                    "must implements IRouterWebContainer!");
-        }
-
-        handler.setUrlPattern(pattern);
-        if(urlList.containsKey(pattern)) {
-            urlList.get(pattern).add(handler);
-        } else {
-            List<RouterUrl> list = new ArrayList<>();
-            list.add(handler);
-            urlList.put(pattern, list);
         }
     }
 
@@ -289,7 +259,6 @@ public class Router {
                     oldData = oldIntent.getExtras();
                 }
                 if(null != oldData) {
-                    oldData.remove(EXTRA_URL);
                     bundle.putAll(oldData);
                 }
 
@@ -310,7 +279,7 @@ public class Router {
 //                    if (uri.getQuery() != null) {
 //                        resource = resource + "?" + query;
 //                    }
-                    goToWeb(context, resource, paramAdapter);
+                    goToWeb(context, id, resource, paramAdapter);
                 }
             }
         } catch (EjuException e) {
@@ -470,7 +439,7 @@ public class Router {
                               Map<String, Object> paramMap,
                               Integer requestCode) throws EjuException {
         ParamAdapter paramAdapter = null;
-        if (null != paramMap && paramMap.size() > 0 && info404 != info) {
+        if (null != paramMap && paramMap.size() > 0 && !info.equals(info404)) {
             paramAdapter = new ParamAdapter();
             paramAdapter.setParam(paramMap);
         }
@@ -481,14 +450,14 @@ public class Router {
             case ViewMapInfo.TYPE_LOCAL_HTML:
             case ViewMapInfo.TYPE_REMOTE_HTML:
             case ViewMapInfo.TYPE_UNSPECIFIED:
-                goToWeb(context, info.getResource(), paramAdapter);
+                goToWeb(context, info.getId(), info.getResource(), paramAdapter);
                 break;
             default:
                 throw new EjuException(EjuException.ILLEGAL_PARAMETER, "type not found!");
         }
     }
 
-    private void goToWeb(Context context, String resource, ParamAdapter paramAdapter) {
+    private void goToWeb(Context context, String id, String resource, ParamAdapter paramAdapter) {
 //        String url = resource;
         Bundle bundle = null;
         try {
@@ -504,20 +473,19 @@ public class Router {
             e.printStackTrace();
         }
 
-        Intent intent = new Intent();
-
-        RouterUrl url = getRouterUrlMatchUrl(resource);
-        Class<?> target = null == url ? null : url.getTarget();
-        if (target == null) {
-            target = WebViewActivity.class;
+        final String packageName = context.getPackageName();
+        String actionName = packageName + ".action." + id.toUpperCase();
+        Intent intent = new Intent(actionName, Uri.parse(resource));
+        ComponentName name = intent.resolveActivity(context.getPackageManager());
+        if(null == name) {
+            intent.setAction(packageName + ".action.DEFAULT");
         }
-        intent.setClass(context, target);
-//        intent.putExtra(WebViewActivity.EXTRA_URL, url);
-        intent.putExtra(EXTRA_URL, resource);
         if(null != bundle) {
             intent.putExtras(bundle);
         }
-        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+//        intent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         context.startActivity(intent);
     }
 
@@ -543,13 +511,17 @@ public class Router {
         return true;
     }
 
-    private void goTo404(Context context) throws EjuException {
-        if (info404 != null) {
-            goToNative(context, null, info404.getResource(), null, null);
-            return;
-        }
-        throw new EjuException(EjuException.RESOURCE_NOT_FOUND, "Resource not found.");
-    }
+    /**
+     * should not be used since {@link #info404} is directly returned
+     * by {@link #checkResource(String, int)}.
+     */
+//    private void goTo404(Context context) throws EjuException {
+//        if (info404 != null) {
+//            goToNative(context, null, info404.getResource(), null, null);
+//            return;
+//        }
+//        throw new EjuException(EjuException.RESOURCE_NOT_FOUND, "Resource not found.");
+//    }
 
     private boolean isResourceValid(String resource, int type) {
         if (type == ViewMapInfo.TYPE_NATIVE) {
@@ -592,32 +564,6 @@ public class Router {
             return nativeSchema.get(0);
         }
         return "eju";
-    }
-
-    /*package*/ RouterUrl getRouterUrlMatchUrl(String url) {
-        int index = url.lastIndexOf('?');
-        if(-1 != index) {
-            url = url.substring(0, index);
-        }
-
-        if(url.endsWith(".js") || url.endsWith(".css")) {
-            return null;
-        }
-
-        RouterUrl rUrl = null;
-        for (List<RouterUrl> list : urlList.values()) {
-            RouterUrl u = list.get(0);
-            if(u.isMatch(url)) {
-                u.setCurrentUrl(url);
-                rUrl = u;
-                break;
-            }
-        }
-        return rUrl;
-    }
-
-    private List<RouterUrl> getUrlFromListById(String pattern) {
-        return urlList.get(pattern);
     }
 
     private void checkNull(Object object, String name) {

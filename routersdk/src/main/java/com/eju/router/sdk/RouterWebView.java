@@ -69,7 +69,9 @@ public class RouterWebView extends WebView {
         webSettings.setDatabasePath(filePath);
         webSettings.setGeolocationDatabasePath(filePath);
         webSettings.setGeolocationEnabled(true);
-
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            webSettings.setAllowUniversalAccessFromFileURLs(true);
+        }
 
         setDebuggable(true);
         setClickable(true);
