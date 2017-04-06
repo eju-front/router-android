@@ -259,6 +259,7 @@ public class Router {
                     oldData = oldIntent.getExtras();
                 }
                 if(null != oldData) {
+                    oldData.remove("router_id");
                     bundle.putAll(oldData);
                 }
 
