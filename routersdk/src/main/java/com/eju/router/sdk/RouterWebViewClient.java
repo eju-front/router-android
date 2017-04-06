@@ -225,17 +225,19 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
         private final String ASSETS_BASE = "file:///android_asset/";
 
         @Override
-        public HttpClient.Response load(final String url) throws IOException {
+        public HttpClient.Response load(String url) throws IOException {
+            url = "file".concat(url.substring(url.indexOf(':')));
             if(!url.startsWith(ASSETS_BASE)) {
                 throw new IOException("invalid url");
             }
 
+            final String path = url;
             return new HttpClient.Response() {
                 @Override
                 public InputStream getBody() {
                     Resources resources = mContext.getResources();
                     try {
-                        return resources.getAssets().open(url.substring(ASSETS_BASE.length()));
+                        return resources.getAssets().open(path.substring(ASSETS_BASE.length()));
                     } catch (IOException e) {
                         return new ByteArrayInputStream(new byte[0]);
                     }
@@ -243,7 +245,13 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
 
                 @Override
                 public String getMimeType() {
-                    return MimeTypeMap.getFileExtensionFromUrl(url);
+                    String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+                    switch (extension) {
+                        case "js":
+                            return "text/javascript";
+                        default:
+                            return MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension);
+                    }
                 }
 
                 @Override
