@@ -16,7 +16,6 @@ import com.eju.router.sdk.Router;
 import com.eju.router.sdk.ViewMapInfo;
 import com.eju.router.sdk.exception.EjuException;
 import com.ejurouter.router_sdk.R;
-import com.ejurouter.router_sdk.model.Address;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -80,7 +79,7 @@ public class RouterActivity extends AppCompatActivity {
         findViewById(R.id.btnToFragment).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Fragment fragment = router.findFragmentById(context, "fragment", param);
+                Fragment fragment = router.findFragmentById("fragment");
                 getFragmentManager().beginTransaction()
                         .replace(R.id.container, fragment, "fragment")
                         .commit();
@@ -89,7 +88,7 @@ public class RouterActivity extends AppCompatActivity {
         findViewById(R.id.btnToSupportFragment).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                android.support.v4.app.Fragment fragment = router.findSupportFragmentById(context, "supportFragment", param);
+                android.support.v4.app.Fragment fragment = router.findSupportFragmentById("supportFragment");
                 getSupportFragmentManager().beginTransaction()
                         .replace(R.id.container, fragment, "supportFragment")
                         .commit();
@@ -104,7 +103,7 @@ public class RouterActivity extends AppCompatActivity {
         findViewById(R.id.btnToLocalH5).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                router.route(context, "local1", ViewMapInfo.TYPE_LOCAL_HTML, param);
+                router.route(context, "local", ViewMapInfo.TYPE_LOCAL_HTML, param);
             }
         });
         findViewById(R.id.btnSetResult).setOnClickListener(new View.OnClickListener() {

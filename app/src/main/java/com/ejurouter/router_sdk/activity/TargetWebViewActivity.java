@@ -1,71 +1,125 @@
 package com.ejurouter.router_sdk.activity;
 
+import android.app.Activity;
+import android.app.ProgressDialog;
+import android.content.Intent;
+import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
-import android.view.View;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.Nullable;
+import android.webkit.WebView;
 
-import com.eju.router.sdk.BridgeHandler;
-import com.eju.router.sdk.BridgeWebView;
-import com.eju.router.sdk.CallBackFunction;
-import com.eju.router.sdk.ProgressWebView;
-import com.eju.router.sdk.WebViewActivity;
-import com.ejurouter.router_sdk.R;
+import com.eju.router.sdk.HttpClient;
+import com.eju.router.sdk.RouterWebView;
+import com.eju.router.sdk.RouterWebViewClient;
+
+import java.io.IOException;
 
 
-public class TargetWebViewActivity extends WebViewActivity {
+/**
+ * @author tangqianwei
+ */
+public class TargetWebViewActivity extends Activity implements Handler.Callback {
 
-    private ProgressWebView webView;
-    private Toolbar toolbar;
+    private static final int SHOW_DIALOG = 0x123456;
+    private static final int DISMISS_DIALOG = 0x654321;
+
+    private RouterWebView mWebView;
+    private Handler mHandler;
+    private ProgressDialog mProgressDialog;
 
     @Override
-    protected void initView(Bundle savedInstanceState) {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        webView = (ProgressWebView) findViewById(R.id.web_view);
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
+        RouterWebView webView = new RouterWebView(this);
+        webView.setWebViewClient(new RouterWebViewClient(webView, new HttpClient() {
             @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+            public Response execute(String url) throws IOException {
+                return null;
             }
-        });
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        }) {
             @Override
-            public void onClick(View v) {
-                finish();
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                mHandler.sendEmptyMessage(SHOW_DIALOG);
             }
-        });
 
-        toolbar.inflateMenu(R.menu.web_menu);
-        toolbar.setTitle("这不是标题");
-//        setSupportActionBar(toolbar);
-        //toolbar 与 js 的相关回调 自行添加
-        webView.registerHandler("ToolBarJs", new BridgeHandler() {
             @Override
-            public void handler(BridgeWebView webView, String url, CallBackFunction function) {
-                if (TextUtils.equals("toggleToolBar", url)) {
-                    toolbar.setVisibility(toolbar.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
-                    return;
-                }
-                if (TextUtils.equals("toggleMenu", url)) {
-                    toolbar.showOverflowMenu();
-                }
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                mHandler.sendEmptyMessage(DISMISS_DIALOG);
             }
         });
+        setContentView(webView);
+        mWebView = webView;
+
+        mHandler = new Handler(this);
+        mProgressDialog = new ProgressDialog(this);
     }
 
     @Override
-    protected int getLayoutId() {
-        return R.layout.activity_target_web_view;
+    protected void onDestroy() {
+        mWebView.destroy();
+        mWebView = null;
+
+        super.onDestroy();
     }
 
     @Override
-    public ProgressWebView getWebView() {
-        return webView;
+    protected void onResume() {
+        super.onResume();
+
+        mWebView.loadUrl(getIntent().getDataString());
     }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        setIntent(intent);
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        switch (msg.what) {
+            case SHOW_DIALOG: {
+                mProgressDialog.show();
+                return true;
+            }
+            case DISMISS_DIALOG: {
+                mProgressDialog.dismiss();
+                return true;
+            }
+            default: {
+                return false;
+            }
+        }
+    }
+
+//    @Override
+//    protected void initView(Bundle savedInstanceState) {
+//        toolbar = (Toolbar) findViewById(R.id.toolbar);
+//        webView = (RouterWebView) findViewById(R.id.web_view);
+//
+//        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+//        fab.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+//                        .setAction("Action", null).show();
+//            }
+//        });
+//        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                finish();
+//            }
+//        });
+//
+//        toolbar.inflateMenu(R.menu.web_menu);
+//        toolbar.setTitle("这不是标题");
+////        setSupportActionBar(toolbar);
+//    }
 
 }

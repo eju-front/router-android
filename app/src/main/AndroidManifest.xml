@@ -37,8 +37,14 @@
         <activity
             android:name=".activity.TargetWebViewActivity"
             android:launchMode="singleTop"
-            android:theme="@style/AppTheme_NoActionBar"
-            />
+            android:theme="@style/AppTheme_NoActionBar">
+            <intent-filter>
+                <action android:name="com.ejurouter.router_sdk.action.DEFAULT"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <data android:scheme="http" android:host="*"/>
+                <data android:scheme="eju" android:host="*"/>
+            </intent-filter>
+        </activity>
     </application>
 
 </manifest>
