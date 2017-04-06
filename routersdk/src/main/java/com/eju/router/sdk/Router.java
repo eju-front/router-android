@@ -557,7 +557,7 @@ public class Router {
                 return true;
             }
         }
-        return false;
+        return url.startsWith("eju");
     }
 
     /*package*/ String getFirstNativeSchema() {
