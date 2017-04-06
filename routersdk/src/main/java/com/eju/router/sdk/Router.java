@@ -117,7 +117,7 @@ public class Router {
         if (null == resource) {
             info404 = null;
         } else {
-            info404 = new ViewMapInfo(null, ViewMapInfo.TYPE_NATIVE, resource, null);
+            info404 = new ViewMapInfo("404", ViewMapInfo.TYPE_NATIVE, resource, null);
         }
     }
 
