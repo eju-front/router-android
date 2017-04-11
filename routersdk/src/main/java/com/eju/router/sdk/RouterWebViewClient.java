@@ -1,12 +1,15 @@
 package com.eju.router.sdk;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.webkit.MimeTypeMap;
+import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -82,6 +85,25 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
 
         onAfterOverrideUrlLoading(view, url);
         return ret;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    @Override
+    public final WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+        String url = request.getUrl().toString();
+        EjuLog.d("[ROUTER][LOAD] " + url);
+
+        url = onBeforeInterceptRequest(view, url);
+
+        final WebResourceResponse wrr;
+        if(router.isNativeRouteSchema(url)) {
+            wrr = mLocalInterceptor.intercept(request);
+        } else {
+            wrr = mRemoteInterceptor.intercept(request);
+        }
+
+        onAfterInterceptRequest(view, url, wrr);
+        return wrr;
     }
 
     @SuppressWarnings("deprecation")
@@ -215,8 +237,8 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
         }
 
         @Override
-        @Nullable public HttpClient.Response load(String url) throws IOException {
-            return mClient.execute(url);
+        @Nullable public HttpClient.Response load(HttpClient.Request request) throws IOException {
+            return mClient.execute(request);
         }
     }
 
@@ -225,19 +247,18 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
         private final String ASSETS_BASE = "file:///android_asset/";
 
         @Override
-        public HttpClient.Response load(String url) throws IOException {
-            url = "file".concat(url.substring(url.indexOf(':')));
+        public HttpClient.Response load(HttpClient.Request request) throws IOException {
+            String requestUrl = request.getUrl();
+            final String url = "file".concat(requestUrl.substring(requestUrl.indexOf(':')));
             if(!url.startsWith(ASSETS_BASE)) {
                 throw new IOException("invalid url");
             }
-
-            final String path = url;
             return new HttpClient.Response() {
                 @Override
                 public InputStream getBody() {
                     Resources resources = mContext.getResources();
                     try {
-                        return resources.getAssets().open(path.substring(ASSETS_BASE.length()));
+                        return resources.getAssets().open(url.substring(ASSETS_BASE.length()));
                     } catch (IOException e) {
                         return new ByteArrayInputStream(new byte[0]);
                     }
@@ -245,7 +266,7 @@ public class RouterWebViewClient extends WebViewClient implements HtmlHandler {
 
                 @Override
                 public String getMimeType() {
-                    String extension = MimeTypeMap.getFileExtensionFromUrl(path);
+                    String extension = MimeTypeMap.getFileExtensionFromUrl(url);
                     switch (extension) {
                         case "js":
                             return "text/javascript";

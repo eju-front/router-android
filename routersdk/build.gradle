@@ -5,8 +5,8 @@ def repositoryPropertiesFile = rootProject.file('repository.properties')
 def repositoryProperties = new Properties()
 repositoryProperties.load(new FileInputStream(repositoryPropertiesFile))
 
-def _VersionCode = 2
-def _VersionName = '0.0.2'
+def _VersionCode = 3
+def _VersionName = '0.0.3'
 
 android {
     compileSdkVersion 24

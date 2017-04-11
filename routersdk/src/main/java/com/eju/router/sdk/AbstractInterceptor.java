@@ -1,5 +1,6 @@
 package com.eju.router.sdk;
 
+import android.annotation.TargetApi;
 import android.os.Build;
 import android.support.annotation.NonNull;
 import android.webkit.WebResourceRequest;
@@ -13,6 +14,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.util.Map;
 
 
 /**
@@ -44,15 +47,15 @@ abstract class AbstractInterceptor {
     /**
      * load contents of the specific url
      *
-     * @param url page's url
+     * @param request page's request
      * @return contents of the specific url in bytes
      * @throws EjuException if error
      */
     @NonNull
-    private HttpClient.Response load0(String url) throws EjuException {
+    private HttpClient.Response load0(HttpClient.Request request) throws EjuException {
         HttpClient.Response content;
         try {
-            content = mLoader.load(url);
+            content = mLoader.load(request);
         } catch (IOException e) {
             throw new EjuException(e);
         }
@@ -72,7 +75,7 @@ abstract class AbstractInterceptor {
      * @throws EjuException if error
      */
     @NonNull
-    private byte[] insert0(String url, @NonNull byte[] buffer) throws EjuException {
+    private byte[] insert0(@NonNull String url, @NonNull byte[] buffer) throws EjuException {
         if(null != mParamHandler) {
             buffer = mParamHandler.handle(url, buffer);
         }
@@ -83,45 +86,117 @@ abstract class AbstractInterceptor {
      * intercept the process of
      * {@link WebViewClient#shouldInterceptRequest(WebView, WebResourceRequest)}
      *
-     * @param url current url
+     * @param request current request.
      * @return {@link WebResourceResponse}
      */
-    WebResourceResponse intercept(String url) {
-        if(url.startsWith("blob:")) {
-            return null;
-        }
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    WebResourceResponse intercept(final WebResourceRequest request) {
+        return intercept(new HttpClient.Request() {
+            @Override
+            public String getUrl() {
+                return request.getUrl().toString();
+            }
 
+            @Override
+            public String getMethod() {
+                return request.getMethod();
+            }
+
+            @Override
+            public Map<String, String> getHeaders() {
+                return request.getRequestHeaders();
+            }
+
+            @Override
+            public OutputStream getBody() {
+                return null;
+            }
+
+            @Override
+            public String getContentType() {
+                return null;
+            }
+        });
+    }
+
+    /**
+     * intercept the process of
+     * {@link WebViewClient#shouldInterceptRequest(WebView, String)}
+     *
+     * @param url current url.
+     * @return {@link WebResourceResponse}
+     */
+    WebResourceResponse intercept(final String url) {
+        return intercept(new HttpClient.Request() {
+            @Override
+            public String getUrl() {
+                return url;
+            }
+
+            @Override
+            public String getMethod() {
+                return "GET";
+            }
+
+            @Override
+            public Map<String, String> getHeaders() {
+                return null;
+            }
+
+            @Override
+            public OutputStream getBody() {
+                return null;
+            }
+
+            @Override
+            public String getContentType() {
+                return null;
+            }
+        });
+    }
+
+    private WebResourceResponse intercept(HttpClient.Request request) {
         final HttpClient.Response response;
         try {
-            response = load0(url);
+            response = load0(request);
         } catch (EjuException e) {
             return null;
         }
 
-        InputStream is;
-        final String mimeType = response.getMimeType();
+        String mimeType = response.getMimeType();
+        mimeType = null == mimeType ? "text/plain" : mimeType;
+
+        InputStream is = response.getBody();
+        if(null == is) {
+            is = new ByteArrayInputStream("no data".getBytes());
+            mimeType = "text/plain";
+        }
+
         switch (mimeType) {
             case "text/html": {
-                byte[] data = readStream(response.getBody());
+                byte[] data = readStream(is);
                 try {
                     // parameter
-                    data = insert0(url, data);
+                    data = insert0(request.getUrl(), data);
                 } catch (EjuException ignored) {}
                 is = new ByteArrayInputStream(data);
                 break;
             }
-            default: {
-                is = response.getBody();
-            }
+            default: {}
         }
 
-        WebResourceResponse wrr = new WebResourceResponse(mimeType, response.getEncoding(), is);
+        String encoding = null == response.getEncoding() ? "utf-8" : response.getEncoding();
+        WebResourceResponse wrr = new WebResourceResponse(mimeType, encoding, is);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             wrr.setResponseHeaders(response.getHeaders());
-            wrr.setStatusCodeAndReasonPhrase(response.getStatusCode(), response.getReasonPhrase());
+            try {
+                wrr.setStatusCodeAndReasonPhrase(
+                        response.getStatusCode(), response.getReasonPhrase());
+            } catch (Exception ignored) {}
         }
         return wrr;
     }
+
 
     private byte[] readStream(InputStream is) {
         byte[] buffer = new byte[0xff];
@@ -133,8 +208,8 @@ abstract class AbstractInterceptor {
                 baos.write(buffer, 0, count);
                 baos.flush();
             }
-        } catch (IOException ignored) {
-
+        } catch (IOException e) {
+            e.printStackTrace();
         } finally {
             try {
                 is.close();

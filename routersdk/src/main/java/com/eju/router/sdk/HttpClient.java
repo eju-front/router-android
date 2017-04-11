@@ -1,9 +1,12 @@
 package com.eju.router.sdk;
 
+import android.support.annotation.Nullable;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
+
 
 /**
  * Class description.
@@ -15,6 +18,50 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public interface HttpClient {
 
+    /**
+     * Http request for execute.
+     */
+    interface Request {
+        /**
+         * request url.
+         *
+         * @return url.
+         */
+        String getUrl();
+
+        /**
+         * request method.
+         *
+         * @return method.
+         */
+        String getMethod();
+
+        /**
+         * request headers.
+         *
+         * @return headers.
+         */
+        Map<String, String> getHeaders();
+
+        /**
+         * request body (for post).
+         *
+         * @return body.
+         */
+        @Nullable OutputStream getBody();
+
+        /**
+         * request content-type.
+         *
+         * @return content-type.
+         */
+        @Nullable String getContentType();
+    }
+
+
+    /**
+     * Http response from execute.
+     */
     interface Response {
         /**
          * return response body through {@link InputStream}.
@@ -61,9 +108,9 @@ public interface HttpClient {
     /**
      * Do http request
      *
-     * @param url url to load.
+     * @param request http request.
      * @return {@link HttpClient.Response}.
      * @throws IOException if exception.
      */
-    Response execute(String url) throws IOException;
+    Response execute(Request request) throws IOException;
 }
