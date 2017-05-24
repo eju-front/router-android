@@ -22,7 +22,7 @@ import java.util.Map;
  * This class will take effect
  * in {@link android.webkit.WebViewClient#shouldInterceptRequest(WebView, WebResourceRequest)} and
  * intercept the process of {@link android.webkit.WebView#loadUrl(String)}. This class will load
- * the contents with {@link HtmlLoader} handle them by {@link #insert0(String, byte[])}
+ * the contents with {@link HtmlLoader} and handle them by {@link #insert0(String, byte[])}
  *
  * @author tangqianwei
  */
@@ -164,12 +164,11 @@ abstract class AbstractInterceptor {
         }
 
         String mimeType = response.getMimeType();
-        mimeType = null == mimeType ? "text/plain" : mimeType;
+        mimeType = null == mimeType ? "text/html" : mimeType;
 
         InputStream is = response.getBody();
         if(null == is) {
-            is = new ByteArrayInputStream("no data".getBytes());
-            mimeType = "text/plain";
+            return null;
         }
 
         switch (mimeType) {
